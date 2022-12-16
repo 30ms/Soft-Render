@@ -1,8 +1,10 @@
+package my.render;
+
 import java.lang.reflect.Array;
 import java.util.Arrays;
 
 /**
- * TODO
+ * 缓冲区
  *
  * @author Liuzhenbin
  * @date 2022/12/15 17:29
@@ -11,10 +13,12 @@ public class Buffer<T> {
     int width,height;
     T[] data;
 
-    public Buffer(int width, int height, T[] data) {
+    public Buffer(int width, int height, T defaultValue) {
         this.width = width;
         this.height = height;
-        this.data = data;
+        @SuppressWarnings("unchecked")
+        T[] tmp = (T[]) Array.newInstance(defaultValue.getClass(), width * height);
+        this.data = tmp;
     }
 
     public T get(int x, int y) {

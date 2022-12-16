@@ -1,3 +1,5 @@
+package my.render;
+
 /**
  * TODO
  *
@@ -6,13 +8,16 @@
  **/
 public class Rasterizer {
 
+    public static final Rasterizer INSTINSE = new Rasterizer();
+    private Rasterizer() {
+    }
 
     // 向量ac, 向量ab的平行四边形的有向面积
     private float edg(Vector3f a, Vector3f b, Vector3f c) {
         return (c.X - a.X) * (b.Y - a.Y) - (b.X - a.X) * (c.Y - a.Y);
     }
 
-    void drawTriangles(Vector3f[] vertices, IShader shader, Buffer<Float> zBuffer, Buffer<Vector3i> pixelBuffer) {
+    void drawTriangles(Vector3f[] vertices, AbstractShader shader, Buffer<Float> zBuffer, Buffer<Vector3i> pixelBuffer) {
 
         //视口转换
         viewpointTransform(pixelBuffer, vertices);
@@ -30,8 +35,7 @@ public class Rasterizer {
 
         float areaABC = edg(a, b, c);
 
-        Vector3i rgbColor = new Vector3i(255, 255, 255);
-        Vector3f bc;
+        Vector3i rgbColor;
 
         for (int y = (int) startY; y < endY; y++) {
             for (int x = (int) startX; x < endX; x++) {
@@ -42,14 +46,14 @@ public class Rasterizer {
                 float areaCAP = edg(c, a, p);
 
                 if (areaABP > 0 & areaBCP > 0 & areaCAP > 0) {
-
+                    //投影点的三角形重心坐标
                     float i = areaBCP / areaABC, j = areaCAP / areaABC, k = areaABP / areaABC;
-                    //透视矫正
-                    i = i * p.Z / a.Z;
-                    j = j * p.Z / b.Z;
-                    k = k * p.Z / c.Z;
-                    //线性插值计算顶点的坐标的Z
-                    float z = a.Z + j * b.Z + k * c.Z;
+                    //透视矫正后点在空间中的Z
+                    float z = 1 / (i / a.Z + j / b.Z + k / c.Z);
+                    //空间点的三角形重心坐标
+                    i = i / a.Z / z;
+                    j = j / b.Z / z;
+                    k = k / c.Z / z;
                     //ZBuffer测试
                     if (zBuffer.get(x, y) < z && z <= 1.0) {
                         zBuffer.set(x, y, z);

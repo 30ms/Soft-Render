@@ -1,3 +1,5 @@
+package my.render;
+
 /**
  * TODO
  *
@@ -86,41 +88,6 @@ public class Matrix4x4f {
                 0, 0, 0, 1);
     }
 
-    public static Matrix4x4f rotation(Vector4f q) {
-        Matrix4x4f ret = Matrix4x4f.IDENTITY;
-
-        float sqx = q.X * q.X;
-        float sqy = q.Y * q.Y;
-        float sqz = q.Z * q.Z;
-        float sqw = q.W * q.W;
-
-        float xy = q.X * q.Y;
-        float xz = q.X * q.Z;
-        float xw = q.X * q.W;
-
-        float yz = q.Y * q.Z;
-        float yw = q.Y * q.W;
-
-        float zw = q.Z * q.W;
-
-        float s2 = 2f / (sqx + sqy + sqz + sqw);
-
-        ret.A11 = 1f - (s2 * (sqy + sqz));
-        ret.A22 = 1f - (s2 * (sqx + sqz));
-        ret.A33 = 1f - (s2 * (sqx + sqy));
-
-        ret.A12 = s2 * (xy + zw);
-        ret.A21 = s2 * (xy - zw);
-
-        ret.A31 = s2 * (xz + yw);
-        ret.A13 = s2 * (xz - yw);
-
-        ret.A32 = s2 * (yz - xw);
-        ret.A23 = s2 * (yz + xw);
-
-        return ret;
-    }
-
     public static Matrix4x4f projection(float aspect,float fov, float nearPlane, float farPlane) {
         double radian = Math.toRadians(fov);
         float s1 = (float) (1 / Math.tan(radian / 2));
@@ -133,6 +100,19 @@ public class Matrix4x4f {
                 0.0f, s1, 0.0f, 0.0f,
                 0.0f, 0.0f, z1, z2,
                 0.0f, 0.0f, -1.0f, 0.0f);
+    }
+
+    public static Matrix4x4f lookAt(Vector3f position, Vector3f target, Vector3f tmp) {
+        Vector3f forward = position.reduce(target);
+        forward.normalized();
+        Vector3f side = tmp.cross(forward);
+        side.normalized();
+        Vector3f up = forward.cross(side);
+        return new Matrix4x4f(
+                side.X,    side.Y,    side.Z,    -side.dotProduct(position),
+                up.X,      up.Y,      up.Z,      -up.dotProduct(position),
+                forward.X, forward.Y, forward.Z, -forward.dotProduct(position),
+                0, 0, 0, 1);
     }
 
     public static Matrix4x4f translation(Vector3f input) {
