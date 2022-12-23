@@ -25,6 +25,10 @@ public class RenderManager {
         render.buildBuffer(displayManager.getWidth(), displayManager.getHeight());
     }
 
+    public void setShader(AbstractShader shader) {
+        render.setShader(shader);
+    }
+
     public void render() {
         //重置缓冲区
         render.clearBuffers();

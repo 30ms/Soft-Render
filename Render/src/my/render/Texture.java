@@ -12,12 +12,6 @@ public class Texture<T> {
     int width, height;
     T[][] pixels;
 
-    public Texture(int width, int height, T[][] pixels) {
-        this.width = width;
-        this.height = height;
-        this.pixels = pixels;
-    }
-
     public Texture(T[] rawRgbData, int width)
     {
         this.width = width;
@@ -35,6 +29,6 @@ public class Texture<T> {
 
     public T getPixel(int x, int y)
     {
-        return pixels[x % width][y % height];
+        return pixels[x][y];
     }
 }

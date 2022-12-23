@@ -8,6 +8,12 @@ package my.render;
  **/
 public class Face {
     int[] vertexIndices;
-    int[] textureIndices;
+    int[] uvIndices;
     int[] normalsIndices;
+
+    public Face(int[] vertexIndices, int[] uvIndices, int[] normalsIndices) {
+        this.vertexIndices = vertexIndices;
+        this.uvIndices = uvIndices;
+        this.normalsIndices = normalsIndices;
+    }
 }

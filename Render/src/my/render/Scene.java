@@ -11,6 +11,12 @@ import java.util.List;
 public class Scene {
     private Camera mainCamera;
     private List<Model> modelsInScene;
+
+    public Scene(Camera mainCamera, List<Model> modelsInScene) {
+        this.mainCamera = mainCamera;
+        this.modelsInScene = modelsInScene;
+    }
+
     public void update(long deltaTime) {
         mainCamera.update(deltaTime);
         modelsInScene.forEach(model -> model.update(deltaTime));

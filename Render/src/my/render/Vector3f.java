@@ -16,7 +16,7 @@ public class Vector3f {
     }
 
     public Vector3f cross(Vector3f right) {
-        return new Vector3f(X * right.Z - Z * right.Y, Z * right.X - X * right.Z, X * right.Y - Y * right.X);
+        return new Vector3f(Y * right.Z - Z * right.Y, Z * right.X - X * right.Z, X * right.Y - Y * right.X);
     }
 
     public Vector3f reduce(Vector3f right) {

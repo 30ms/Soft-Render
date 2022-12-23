@@ -12,13 +12,16 @@ import java.util.Arrays;
 public class Buffer<T> {
     int width,height;
     T[] data;
+    T defaultValue;
 
     public Buffer(int width, int height, T defaultValue) {
         this.width = width;
         this.height = height;
+        this.defaultValue = defaultValue;
         @SuppressWarnings("unchecked")
         T[] tmp = (T[]) Array.newInstance(defaultValue.getClass(), width * height);
         this.data = tmp;
+        clear();
     }
 
     public T get(int x, int y) {
@@ -30,6 +33,6 @@ public class Buffer<T> {
     }
 
     public void clear() {
-        Arrays.fill(data, null);
+        Arrays.fill(data, defaultValue);
     }
 }

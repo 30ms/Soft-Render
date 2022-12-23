@@ -8,13 +8,13 @@ package my.render;
  **/
 public class Mesh {
     private Vector3f[] vertices;
-    private Vector3f[] textures;
+    private Vector2f[] uvs;
     private Vector3f[] normals;
     private Face[] faces;
 
-    public Mesh(Vector3f[] vertices, Vector3f[] textures, Vector3f[] normals, Face[] faces) {
+    public Mesh(Vector3f[] vertices, Vector2f[] uvs, Vector3f[] normals, Face[] faces) {
         this.vertices = vertices;
-        this.textures = textures;
+        this.uvs = uvs;
         this.normals = normals;
         this.faces = faces;
     }
@@ -27,12 +27,12 @@ public class Mesh {
         this.vertices = vertices;
     }
 
-    public Vector3f[] getTextures() {
-        return textures;
+    public Vector2f[] getUVs() {
+        return uvs;
     }
 
-    public void setTextures(Vector3f[] textures) {
-        this.textures = textures;
+    public void setUVs(Vector2f[] uvs) {
+        this.uvs = uvs;
     }
 
     public Vector3f[] getNormals() {

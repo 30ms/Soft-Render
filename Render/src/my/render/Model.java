@@ -10,17 +10,16 @@ public class Model {
     /*
      位置
      */
-    private Vector3f position;
+    Vector3f position;
     /*
      缩放
      */
-    private Vector3f scale;
+    Vector3f scale;
     /*
      旋转
      */
-    private Vector3f rotation;
-    private Mesh mesh;
-    private Matrix4x4f modelMat;
+    Vector3f rotation;
+    Mesh mesh;
 
     public Model(Vector3f position, Vector3f scale, Vector3f rotation, Mesh mesh) {
         this.position = position;
@@ -30,18 +29,9 @@ public class Model {
     }
 
     public void update(long deltaTime) {
-        modelMat = Matrix4x4f.translation(position)
-                .multiply(Matrix4x4f.scale(scale))
-                .multiply(Matrix4x4f.rotationX(rotation.X))
-                .multiply(Matrix4x4f.rotationY(rotation.Y))
-                .multiply(Matrix4x4f.rotationZ(rotation.Z));
     }
 
     public Mesh getMesh() {
         return mesh;
-    }
-
-    public Matrix4x4f getModelMat() {
-        return modelMat;
     }
 }

@@ -43,5 +43,9 @@ public class Vector4f {
     public float dotProduct(Vector4f right) {
         return X * right.X + Y * right.Y + Z * right.Z + W * right.W;
     }
+
+    public Vector3f toVector3f() {
+        return new Vector3f(X, Y, Z);
+    }
 }
 

@@ -51,9 +51,9 @@ public class Rasterizer {
                     //透视矫正后点在空间中的Z
                     float z = 1 / (i / a.Z + j / b.Z + k / c.Z);
                     //空间点的三角形重心坐标
-                    i = i / a.Z / z;
-                    j = j / b.Z / z;
-                    k = k / c.Z / z;
+//                    i = i / a.Z / z;
+//                    j = j / b.Z / z;
+//                    k = k / c.Z / z;
                     //ZBuffer测试
                     if (zBuffer.get(x, y) < z && z <= 1.0) {
                         zBuffer.set(x, y, z);

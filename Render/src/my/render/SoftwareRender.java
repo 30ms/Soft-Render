@@ -1,5 +1,7 @@
 package my.render;
 
+import java.util.Arrays;
+
 /**
  * TODO
  *
@@ -8,7 +10,7 @@ package my.render;
  **/
 public class SoftwareRender {
     private Camera camera;
-    private AbstractShader shader;
+    private AbstractShader shader = new FlatShader();
     private Buffer<Vector3i> pixelBuffer;
     private Buffer<Float> zBuffer;
     private final Rasterizer rasterizer = Rasterizer.INSTINSE;
@@ -19,7 +21,7 @@ public class SoftwareRender {
 
     public void buildBuffer(int width, int height) {
         this.pixelBuffer = new Buffer<>(width, height, new Vector3i(0, 0, 0));
-        this.zBuffer = new Buffer<>(width, height, 1.0f);
+        this.zBuffer = new Buffer<>(width, height, -1.0f);
     }
 
     public void clearBuffers() {
@@ -42,19 +44,19 @@ public class SoftwareRender {
     public void drawTriangularMesh(Model model) {
         Mesh mesh = model.getMesh();
         Vector3f[] vertices = mesh.getVertices();
-        Vector3f[] textures = mesh.getTextures();
+        Vector2f[] textures = mesh.getUVs();
         Vector3f[] normals = mesh.getNormals();
         Face[] faces = mesh.getFaces();
 
         for (Face face : faces) {
             Vector4f[] vertices_f = new Vector4f[face.vertexIndices.length];
-            Vector3f[] textures_f = new Vector3f[face.textureIndices.length];
+            Vector2f[] uvs_f = new Vector2f[face.uvIndices.length];
             Vector3f[] normals_f = new Vector3f[face.normalsIndices.length];
             for (int i = 0; i < face.vertexIndices.length; i++) {
                 vertices_f[i] = new Vector4f(vertices[face.vertexIndices[i]]);
             }
-            for (int i = 0; i < face.textureIndices.length; i++) {
-                textures_f[i] = textures[face.textureIndices[i]];
+            for (int i = 0; i < face.uvIndices.length; i++) {
+                uvs_f[i] = textures[face.uvIndices[i]];
             }
             for (int i = 0; i < face.normalsIndices.length; i++) {
                 normals_f[i] = normals[face.normalsIndices[i]];
@@ -63,26 +65,28 @@ public class SoftwareRender {
             //TODO 背面裁剪
 
             //顶点着色
-            shader.m = model.getModelMat();
+            shader.m = Matrix4x4f.translation(model.position)
+                    .multiply(Matrix4x4f.scale(model.scale))
+                    .multiply(Matrix4x4f.rotationX(model.rotation.X))
+                    .multiply(Matrix4x4f.rotationY(model.rotation.Y))
+                    .multiply(Matrix4x4f.rotationZ(model.rotation.Z));
             shader.v = camera.viewMat;
             shader.p = camera.projectionMat;
             shader.cameraPosition = new Vector4f(camera.position);
             for (int i = 0; i < vertices_f.length; i++) {
-                vertices_f[i] = shader.vertex(i, vertices_f[i], normals_f[i], textures_f[i]);
+                vertices_f[i] = shader.vertex(i, vertices_f[i], null, uvs_f[i]);
             }
 
             //TODO 视锥体裁剪, 此面不用渲染
             if(clipping(vertices_f)) continue;
 
             //投影
-            for (Vector4f vertex : vertices_f) {
-                vertex.X /= vertex.W;
-                vertex.Y /= vertex.W;
-                vertex.Z /= vertex.W;
-            }
+            Vector3f[] primVertices = Arrays.stream(vertices_f)
+                    .map(v -> new Vector3f(v.X / v.W, v.Y / v.W, v.Z / v.W))
+                    .toArray(Vector3f[]::new);
 
             //光栅化
-            rasterizer.drawTriangles(vertices, shader, zBuffer, pixelBuffer);
+            rasterizer.drawTriangles(primVertices, shader, zBuffer, pixelBuffer);
         }
     }
 
