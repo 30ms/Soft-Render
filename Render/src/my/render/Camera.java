@@ -1,7 +1,5 @@
 package my.render;
 
-import math.Matrix4x4;
-
 /**
  * TODO
  *
@@ -34,14 +32,52 @@ public class Camera {
 
     private void updateMat() {
         this.viewMat = Matrix4x4f.lookAt(position, target, up);
-        this.projectionMat = Matrix4x4f.projection(aspect, fov, near, far);
+        this.projectionMat = Matrix4x4f.perspectiveProjection(aspect, fov, near, far);
     }
 
     //更新矩阵
     void update(long deltaTime) {
+        updateMat();
     }
 
-    public void rotation(Vector3f angle) {
+    public void forward(int length) {
+        Vector3f front = target.reduce(position);
+        front.normalized();
+        position = position.add(front.scale(length));
+        target = target.add(front.scale(length));
+    }
+
+    public void backward(int length) {
+        Vector3f front = target.reduce(position);
+        front.normalized();
+        position = position.reduce(front.scale(length));
+        target = target.reduce(front.scale(length));
+    }
+
+    public void right(int length) {
+        Vector3f front = target.reduce(position);
+        Vector3f right = front.cross(up);
+        right.normalized();
+        position = position.add(right.scale(length));
+        target = target.add(right.scale(length));
+    }
+
+    public void left(int length) {
+        Vector3f front = target.reduce(position);
+        Vector3f right = front.cross(up);
+        right.normalized();
+        position = position.reduce(right.scale(length));
+        target = target.reduce(right.scale(length));
+    }
+
+    public void rotation(float x, float y, float z) {
+        Matrix4x4f t1 = Matrix4x4f.translation(position.scale(-1));
+        Matrix4x4f ro = Matrix4x4f.rotationX(x).multiply(Matrix4x4f.rotationY(y)).multiply(Matrix4x4f.rotationZ(z));
+        Matrix4x4f t2 = Matrix4x4f.translation(position);
+        Vector4f res = t2.multiply(ro).multiply(t1).multiply(new Vector4f(target));
+        target.X = res.X;
+        target.Y = res.Y;
+        target.Z = res.Z;
     }
 
     void reset() {

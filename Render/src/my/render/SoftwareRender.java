@@ -21,7 +21,7 @@ public class SoftwareRender {
 
     public void buildBuffer(int width, int height) {
         this.pixelBuffer = new Buffer<>(width, height, new Vector3i(0, 0, 0));
-        this.zBuffer = new Buffer<>(width, height, -1.0f);
+        this.zBuffer = new Buffer<>(width, height, Float.MAX_VALUE);
     }
 
     public void clearBuffers() {
@@ -71,22 +71,12 @@ public class SoftwareRender {
                     .multiply(Matrix4x4f.rotationY(model.rotation.Y))
                     .multiply(Matrix4x4f.rotationZ(model.rotation.Z));
             shader.v = camera.viewMat;
-            shader.p = camera.projectionMat;
-            shader.cameraPosition = new Vector4f(camera.position);
+            //顶点着色
             for (int i = 0; i < vertices_f.length; i++) {
                 vertices_f[i] = shader.vertex(i, vertices_f[i], null, uvs_f[i]);
             }
-
-            //TODO 视锥体裁剪, 此面不用渲染
-            if(clipping(vertices_f)) continue;
-
-            //投影
-            Vector3f[] primVertices = Arrays.stream(vertices_f)
-                    .map(v -> new Vector3f(v.X / v.W, v.Y / v.W, v.Z / v.W))
-                    .toArray(Vector3f[]::new);
-
             //光栅化
-            rasterizer.drawTriangles(primVertices, shader, zBuffer, pixelBuffer);
+            rasterizer.drawTriangles(vertices_f, camera.projectionMat, shader, zBuffer, pixelBuffer);
         }
     }
 
@@ -96,17 +86,6 @@ public class SoftwareRender {
         viewDir.normalized();
         //向量点乘判断夹角是否大于180度
         return viewDir.dotProduct(normals) <= 0.0;
-    }
-
-    private boolean clipping(Vector4f[] clipSpaceVertices) {
-        int count = 0;
-        for (Vector4f vertex : clipSpaceVertices) {
-            //判断点是否在外面
-            if((vertex.X < -vertex.W || vertex.X > vertex.W)  && (vertex.Y < -vertex.W || vertex.Y > vertex.W) && (vertex.Z < -vertex.W || vertex.Z > vertex.W))
-                count++;
-        }
-        //是否全部点都在外面
-        return count == clipSpaceVertices.length;
     }
 
 }

@@ -13,7 +13,7 @@ public class FlatShader extends AbstractShader {
 
     @Override
     public Vector4f vertex(int index, Vector4f vertex, Vector3f normal, Vector2f uv) {
-        return p.multiply(v).multiply(m).multiply(vertex);
+        return v.multiply(m).multiply(vertex);
     }
 
     @Override

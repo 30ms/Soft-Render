@@ -1,5 +1,7 @@
 package my.render;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
@@ -89,13 +91,13 @@ public class Main {
 
     static Face[] faces = new Face[]
             {
-                    new Face(new int[]{0, 3, 1}, new int[]{0, 3, 1}, new int[]{}),
-                    new Face(new int[]{1, 3, 2}, new int[]{0, 3, 1}, new int[]{}),
+                    new Face(new int[]{0, 3, 1}, new int[]{0, 3, 1}, new int[]{}),     //Z+
+                    new Face(new int[]{1, 3, 2}, new int[]{1, 3, 2}, new int[]{}),
 
-                    new Face(new int[]{4, 5, 7}, new int[]{4, 5, 7}, new int[]{}),
+                    new Face(new int[]{4, 5, 7}, new int[]{4, 5, 7}, new int[]{}),    //Z-
                     new Face(new int[]{5, 6, 7}, new int[]{5, 6, 7}, new int[]{}),
 
-                    new Face(new int[]{8, 11, 9}, new int[]{8, 11, 9}, new int[]{}),
+                    new Face(new int[]{8, 11, 9}, new int[]{8, 11, 9}, new int[]{}),    //Y+
                     new Face(new int[]{9, 11, 10}, new int[]{9, 11, 10}, new int[]{}),
 
                     new Face(new int[]{12, 13, 15}, new int[]{12, 13, 15}, new int[]{}), // Y- 0, 1, 3,
@@ -110,32 +112,116 @@ public class Main {
 
     static Texture<Vector3i> texture = new Texture<>(new Vector3i[]
             {
-                    new Vector3i(240, 0, 16),
-                    new Vector3i(0, 216, 32),
-                    new Vector3i(26, 0, 240),
-                    new Vector3i(255, 255, 0),
+                    new Vector3i(255, 0, 0),
+                    new Vector3i(0, 255, 0),
+                    new Vector3i(0, 0, 255),
+                    new Vector3i(0, 255, 255),
             }, 2);
-    static long MS_PRE_UPDATE = 16;
+
+    //主循环
+    static boolean MainLoop = true;
+    //每16ms更新一次
+    static long MS_PER_UPDATE = 16;
+    static Vector3i COLOR_WHITE = new Vector3i(255, 255, 255);
     public static void main(String[] args) throws Exception {
 
-/*        int consoleModeFlags = WindowsInterop.KERNEL32_ENABLE_LINE_INPUT |
-                WindowsInterop.KERNEL32_ENABLE_PROCESSED_INPUT |
-                WindowsInterop.KERNEL32_ENABLE_ECHO_INPUT;
+        int consoleModeFlags = WindowsInterop.KERNEL32_ENABLE_LINE_INPUT | WindowsInterop.KERNEL32_ENABLE_PROCESSED_INPUT | WindowsInterop.KERNEL32_ENABLE_ECHO_INPUT;
         // Run Powershell with a predefined script that can change the terminal to non-canonical mode.
-        WindowsInterop.runPowershellScript(WindowsInterop.getStdinModeChangePowershellScript(consoleModeFlags, false));*/
-        Model[] models = new Model[]{
-                new Model(new Vector3f(0, 0, 0), new Vector3f(1, 1, 1), new Vector3f(0, 0, 0), new Mesh(vertices, uvs, new Vector3f[]{}, faces))
-        };
-        int WIDTH = 200, HEIGHT = 200;
-        Camera camera = new Camera(new Vector3f(0, 0, -3), new Vector3f(0, 0, 0), new Vector3f(0, 1, 0), 50, (float) WIDTH / HEIGHT, 0.1f, 100f);
-        DisplayManager displayManager = new DisplayManager(WIDTH, HEIGHT);
+        WindowsInterop.runPowershellScript(WindowsInterop.getStdinModeChangePowershellScript(consoleModeFlags, false));
+        String[] sizeString = WindowsInterop.runPowershellScript("$Host.Ui.RawUi.WindowSize.ToString()").split(",");
+
+        int width = Integer.parseInt(sizeString[0]);
+        int height = Integer.parseInt(sizeString[1]);
+
+        Vector2i terminalSize = new Vector2i(width, height);
+
+        Model model = new Model(new Vector3f(0, 0, 0), new Vector3f(1, 1, 1), new Vector3f(0, 0, 0), new Mesh(vertices, uvs, new Vector3f[]{}, faces));
+        Model[] models = new Model[]{model};
+        Camera camera = new Camera(new Vector3f(0, 0, 2f), new Vector3f(0, 0, 0), new Vector3f(0, 1, 0), 45, (float) terminalSize.X / terminalSize.Y, 0.1f, 50);
+        DisplayManager displayManager = new DisplayManager(terminalSize.X, terminalSize.Y);
         SceneManager sceneManager = new SceneManager();
         sceneManager.addScene("main", new Scene(camera, Arrays.stream(models).collect(Collectors.toList())));
         sceneManager.switchScene("main");
         RenderManager renderManager = new RenderManager(displayManager, sceneManager);
         renderManager.setShader(new TextureMapShader(texture));
-        long pre = System.currentTimeMillis();
-        long lag = 0;
+        long previous = System.currentTimeMillis();
+        long lag = 0, time = 0;
+        long frame = 0, lastSecondTime = 0, lastSecondFrame = 0, framesPerSecond = 0;
+        while (MainLoop)
+        {
+            long current = System.currentTimeMillis();
+            long elapsed = current - previous;
+            previous = current;
+            lag += elapsed;
+            time += elapsed;
+
+            if (time - lastSecondTime >= 1000) {
+                framesPerSecond = frame - lastSecondFrame;
+                lastSecondFrame = frame;
+                lastSecondTime = time;
+            }
+
+            processInput(sceneManager);
+
+            while (lag >= MS_PER_UPDATE)
+            {
+                update(sceneManager, lag);
+                lag -= MS_PER_UPDATE;
+            }
+
+            render(renderManager);
+            displayManager.drawText(0, displayManager.getHeight() - 2, COLOR_WHITE, "摄影机: w,s,a,d 前后左右 q,e 左右旋转 | x 退出");
+            displayManager.drawText(0, displayManager.getHeight() - 1, COLOR_WHITE, framesPerSecond + "FPS | time:" + time / 1000);
+            frame++;
+        }
+    }
+
+    public static void processInput(SceneManager sceneManager) {
+        Thread thread = new Thread(() -> {
+            while (MainLoop) {
+                try {
+                    if (System.in.available() > 0) {
+                        Camera camera = sceneManager.getCurrentScene().getMainCamera();
+                        char key = (char) System.in.read();
+                        switch (key) {
+                            case 'w':
+                                camera.forward(1);
+                                break;
+                            case 's':
+                                camera.backward(1);
+                                break;
+                            case 'a':
+                                camera.left(1);
+                                break;
+                            case 'd':
+                                camera.right(1);
+                                break;
+                            case 'q':
+                                camera.rotation(0, 10, 0);
+                                break;
+                            case 'e':
+                                camera.rotation(0, -10, 0);
+                                break;
+                            case 'x':
+                                MainLoop = false;
+                        }
+                    }
+                    Thread.sleep(167);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+        thread.start();
+    }
+
+    public static void update(SceneManager sceneManager, long delta) {
+        sceneManager.updateScene(delta);
+        //绕Y轴旋转
+        sceneManager.getCurrentScene().getModelsInScene().forEach(model -> model.rotation.Y += delta * 0.003);
+    }
+
+    public static void render(RenderManager renderManager) {
         renderManager.render();
     }
 }

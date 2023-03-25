@@ -23,6 +23,14 @@ public class Vector3f {
         return new Vector3f(X - right.X, Y - right.Y, Z - right.Z);
     }
 
+    public Vector3f add(Vector3f right) {
+        return new Vector3f(X + right.X, Y + right.Y, Z + right.Z);
+    }
+
+    public Vector3f scale(float scale) {
+        return new Vector3f(X * scale, Y * scale, Z * scale);
+    }
+
     public float length() {
         return (float) Math.sqrt(X * X + Y * Y + Z * Z );
     }

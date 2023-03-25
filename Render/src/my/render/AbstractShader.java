@@ -9,8 +9,6 @@ package my.render;
 public abstract class AbstractShader {
     Matrix4x4f m;
     Matrix4x4f v;
-    Matrix4x4f p;
-    Vector4f cameraPosition;
 
     abstract public Vector4f vertex(int index, Vector4f vertex, Vector3f normal, Vector2f uv);
 

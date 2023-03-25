@@ -20,7 +20,7 @@ public class DisplayManager {
         //TODO 渲染像素
         int ansiColorCode = -1;
         int lastColorRgb8 = -1;
-        System.out.print("\u001b[" + 1 + ";" + 1 + "H");
+        setConsoleCursorPosition(0, 0);
         for (int y = 0; y < pixelBuffer.height; y++) {
             for (int x = 0; x < pixelBuffer.width; x++) {
                 Vector3i value = pixelBuffer.get(x,y);
@@ -36,8 +36,17 @@ public class DisplayManager {
                 }
                 System.out.print('\u2588');
             }
-            System.out.print("\n"); // Mo
+            System.out.print("\n"); //  Move to the beginning of the next line.
         }
+    }
+
+    private void setConsoleCursorPosition(int x, int y)
+    {
+        System.out.print("\u001b[" + (y + 1) + ";" + (x + 1) + "H");
+    }
+
+    private String getAnsiCodeForFgRgb24(int r, int g, int b) {
+        return "\u001b[38;2;" + Math.min(r, 255) + ";" + Math.min(g, 255) + ";" + Math.min(b, 255) + "m";
     }
 
     public int getWidth() {
@@ -46,5 +55,11 @@ public class DisplayManager {
 
     public int getHeight() {
         return height;
+    }
+
+    public void drawText(int x, int y, Vector3i rgb, String text) {
+        setConsoleCursorPosition(x, y);
+        System.out.print(getAnsiCodeForFgRgb24(rgb.X, rgb.Y, rgb.Z));
+        System.out.print(text);
     }
 }

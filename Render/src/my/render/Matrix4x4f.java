@@ -88,30 +88,46 @@ public class Matrix4x4f {
                 0, 0, 0, 1);
     }
 
-    public static Matrix4x4f projection(float aspect,float fov, float nearPlane, float farPlane) {
-        double radian = Math.toRadians(fov);
-        float s1 = (float) (1 / Math.tan(radian / 2));
-        float s2 = s1 / aspect;
-        float z1 = -((farPlane + nearPlane) / (farPlane - nearPlane));
-        float z2 = -((2 * farPlane * nearPlane) / (farPlane - nearPlane));
-
-        return new Matrix4x4f(
-                s2, 0.0f, 0.0f, 0.0f,
-                0.0f, s1, 0.0f, 0.0f,
-                0.0f, 0.0f, z1, z2,
-                0.0f, 0.0f, -1.0f, 0.0f);
+    //右手坐标系的透视投影矩阵
+    public static Matrix4x4f perspectiveProjection(float aspect, float fov, float zNear, float zFar) {
+        float left, right, bottom, top;
+        top = (float) (zNear * Math.tan(Math.toRadians(fov) / 2));
+        bottom = -top;
+        right = aspect * top;
+        left = -right;
+        return perspectiveProjection(left, right, bottom, top, zNear, zFar);
     }
 
-    public static Matrix4x4f lookAt(Vector3f position, Vector3f target, Vector3f tmp) {
-        Vector3f forward = position.reduce(target);
-        forward.normalized();
-        Vector3f side = tmp.cross(forward);
-        side.normalized();
-        Vector3f up = forward.cross(side);
+    //右手坐标系的透视投影矩阵,XYZ值映射到了[-1,1], near, far为距离值
+    public static Matrix4x4f perspectiveProjection(float left, float right, float bottom, float top, float near, float far) {
         return new Matrix4x4f(
-                side.X,    side.Y,    side.Z,    -side.dotProduct(position),
-                up.X,      up.Y,      up.Z,      -up.dotProduct(position),
-                forward.X, forward.Y, forward.Z, -forward.dotProduct(position),
+                2 * near / (right - left), 0,                         (right + left) / (right - left), 0,
+                0,                         2 * near / (top - bottom), (top + bottom) / (top - bottom), 0,
+                0,                         0,                         -(near + far) / (far - near),    -(2 * near * far) / (far - near),
+                0,                         0,                         -1,                              0
+        );
+    }
+
+    public static Matrix4x4f othProjection(float left, float right, float bottom, float top, float near, float far) {
+        return new Matrix4x4f(
+                2 / (right - left), 0, 0, -(right + left) / (right - left),
+                0, 2 / (top - bottom), 0, -(top + bottom) / (top - bottom),
+                0, 0, 2 / (far - near), -(far + near) / (far - near),
+                0, 0, 0, 1
+        );
+    }
+
+    public static Matrix4x4f lookAt(Vector3f position, Vector3f target, Vector3f up) {
+        //z轴为观察方向的反向
+        Vector3f z = position.reduce(target);
+        z.normalized();
+        Vector3f x = up.cross(z);
+        x.normalized();
+        Vector3f y = z.cross(x);
+        return new Matrix4x4f(
+                x.X, x.Y, x.Z, -x.dotProduct(position),
+                y.X, y.Y, y.Z, -y.dotProduct(position),
+                z.X, z.Y, z.Z, -z.dotProduct(position),
                 0, 0, 0, 1);
     }
 
