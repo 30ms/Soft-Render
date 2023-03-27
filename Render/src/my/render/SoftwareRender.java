@@ -21,7 +21,7 @@ public class SoftwareRender {
 
     public void buildBuffer(int width, int height) {
         this.pixelBuffer = new Buffer<>(width, height, new Vector3i(0, 0, 0));
-        this.zBuffer = new Buffer<>(width, height, Float.MAX_VALUE);
+        this.zBuffer = new Buffer<>(width, height, -Float.MAX_VALUE);
     }
 
     public void clearBuffers() {

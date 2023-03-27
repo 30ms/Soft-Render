@@ -57,24 +57,24 @@ public class Rasterizer {
                 float areaBCP = edg(b, c, p);
                 float areaCAP = edg(c, a, p);
 
-                //投影点的三角形重心坐标
+                //屏幕空间投影点的三角形重心坐标: barycentric (i, j, k)
                 Vector3f barycentric = new Vector3f(areaBCP / areaABC, areaCAP / areaABC, areaABP / areaABC);
                 //判断点p是否在三角形内
                 if (barycentric.X < 0 || barycentric.Y < 0 || barycentric.Z < 0) continue;
 
-                //TODO 此处矫正有问题
-                barycentric.X = barycentric.X / vertices_ndc[0].Z;
-                barycentric.Y = barycentric.Y / vertices_ndc[1].Z;
-                barycentric.Z = barycentric.Z / vertices_ndc[2].Z;
-                //透视矫正后点在空间中的Z
+                //屏幕空间投影点在观察空间中的Z, 1/Zn = i * 1/Z1 + j * 1/Z2 + k * 1/Z3
+                barycentric.X = barycentric.X / vertices[0].Z;
+                barycentric.Y = barycentric.Y / vertices[1].Z;
+                barycentric.Z = barycentric.Z / vertices[2].Z;
                 float revise_z = 1f / (barycentric.X + barycentric.Y + barycentric.Z);
-                //插值矫正
-                barycentric.X *= revise_z;
-                barycentric.Y *= revise_z;
-                barycentric.Z *= revise_z;
                 //ZBuffer测试
-                if (zBuffer.get(x, y) < revise_z) continue;
+                if (zBuffer.get(x, y) > revise_z) continue;
                 zBuffer.set(x, y, revise_z);
+
+                //插值变量矫正, 属性插值公式: In = (i * I1/Z1 + j * I2/Z2 + k * I3/Z3) * zn
+                barycentric.X *= revise_z;   // i * 1/Z1 * Zn
+                barycentric.Y *= revise_z;   // j * 1/Z2 * Zn
+                barycentric.Z *= revise_z;   // k * 1/Z3 * Zn
 
                 //执行片元着色器
                 rgbColor = shader.fragment(barycentric);
