@@ -1,7 +1,5 @@
 package my.render;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
@@ -217,8 +215,12 @@ public class Main {
 
     public static void update(SceneManager sceneManager, long delta) {
         sceneManager.updateScene(delta);
-        //绕Y轴旋转
-        sceneManager.getCurrentScene().getModelsInScene().forEach(model -> model.rotation.Y += delta * 0.003);
+        //绕XYZ轴旋转
+        sceneManager.getCurrentScene().getModelsInScene().forEach(model -> {
+            model.rotation.Y += delta * 0.003;
+            model.rotation.X += delta * 0.003;
+            model.rotation.Z += delta * 0.003;
+        });
     }
 
     public static void render(RenderManager renderManager) {
