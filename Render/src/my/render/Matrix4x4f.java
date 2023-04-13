@@ -18,6 +18,14 @@ public class Matrix4x4f {
             0, 0, 1, 0,
             0, 0, 0, 1);
 
+    public static Matrix4x4f identify() {
+        return new Matrix4x4f(
+                1, 0, 0, 0,
+                0, 1, 0, 0,
+                0, 0, 1, 0,
+                0, 0, 0, 1);
+    }
+
     public static final Matrix4x4f EMPTY = new Matrix4x4f(
             0, 0, 0, 0,
             0, 0, 0, 0,

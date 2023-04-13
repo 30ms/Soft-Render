@@ -7,7 +7,7 @@ package my.render;
  * @date 2022/12/13 9:44
  **/
 public class Vector3f {
-    float X,Y,Z;
+    public float X,Y,Z;
 
     public Vector3f(float x, float y, float z) {
         this.X = x;
