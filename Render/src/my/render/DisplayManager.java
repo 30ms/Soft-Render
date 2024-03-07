@@ -21,7 +21,8 @@ public class DisplayManager {
         int ansiColorCode = -1;
         int lastColorRgb8 = -1;
         setConsoleCursorPosition(0, 0);
-        for (int y = 0; y < pixelBuffer.height; y++) {
+        //左手系，所以y轴反向
+        for (int y = pixelBuffer.height - 1; y >= 0; y--) {
             for (int x = 0; x < pixelBuffer.width; x++) {
                 Vector3i value = pixelBuffer.get(x,y);
                 int r = Math.min((int) ((value.X / 256.0f) * 6), 5) * 36;
