@@ -168,7 +168,7 @@ public class Main {
             }
 
             render(renderManager);
-            displayManager.drawText(0, displayManager.getHeight() - 2, COLOR_WHITE, "摄影机: w,s,a,d 前后左右 q,e 左右旋转 | x 退出");
+            displayManager.drawText(0, displayManager.getHeight() - 2, COLOR_WHITE, "摄影机: w,s,a,d,z,c 前后左右上下, i,k,j,l 上下左右摇头 | x 退出");
             displayManager.drawText(0, displayManager.getHeight() - 1, COLOR_WHITE, framesPerSecond + "FPS | time:" + time / 1000);
             frame++;
         }
@@ -194,11 +194,23 @@ public class Main {
                             case 'd':
                                 camera.right(1);
                                 break;
-                            case 'q':
+                            case 'z':
+                                camera.up(0.5f);
+                                break;
+                            case 'c' :
+                                camera.down(0.5f);
+                                break;
+                            case 'j':
                                 camera.rotation(0, 10, 0);
                                 break;
-                            case 'e':
+                            case 'l':
                                 camera.rotation(0, -10, 0);
+                                break;
+                            case 'i':
+                                camera.rotation(10, 0, 0);
+                                break;
+                            case 'k':
+                                camera.rotation(-10, 0, 0);
                                 break;
                             case 'x':
                                 MainLoop = false;

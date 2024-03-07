@@ -70,6 +70,16 @@ public class Camera {
         target = target.reduce(right.scale(length));
     }
 
+    public void up(float length) {
+        position = position.add(up.scale(length));
+        target  = target.add(up.scale(length));
+    }
+
+    public void down(float length) {
+        position = position.reduce(up.scale(length));
+        target  = target.reduce(up.scale(length));
+    }
+
     public void rotation(float x, float y, float z) {
         Matrix4x4f t1 = Matrix4x4f.translation(position.scale(-1));
         Matrix4x4f ro = Matrix4x4f.rotationX(x).multiply(Matrix4x4f.rotationY(y)).multiply(Matrix4x4f.rotationZ(z));
