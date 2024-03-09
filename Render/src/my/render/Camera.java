@@ -40,21 +40,21 @@ public class Camera {
         updateMat();
     }
 
-    public void forward(int length) {
+    public void forward(float length) {
         Vector3f front = target.reduce(position);
         front.normalized();
         position = position.add(front.scale(length));
         target = target.add(front.scale(length));
     }
 
-    public void backward(int length) {
+    public void backward(float length) {
         Vector3f front = target.reduce(position);
         front.normalized();
         position = position.reduce(front.scale(length));
         target = target.reduce(front.scale(length));
     }
 
-    public void right(int length) {
+    public void right(float length) {
         Vector3f front = target.reduce(position);
         Vector3f right = front.cross(up);
         right.normalized();
@@ -62,7 +62,7 @@ public class Camera {
         target = target.add(right.scale(length));
     }
 
-    public void left(int length) {
+    public void left(float length) {
         Vector3f front = target.reduce(position);
         Vector3f right = front.cross(up);
         right.normalized();
