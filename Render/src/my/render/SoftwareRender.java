@@ -32,6 +32,10 @@ public class SoftwareRender {
         pixelBuffer.clear();
     }
 
+    public void setClearColor(Vector3i color) {
+        pixelBuffer.defaultValue = color;
+    }
+
     public Buffer<Vector3i> getRenderTarget() {
         return pixelBuffer;
     }
@@ -136,6 +140,13 @@ public class SoftwareRender {
                 intersection.texCoords = new Vector2f(
                         v1.texCoords.X + t * (v2.texCoords.X - v1.texCoords.X),
                         v1.texCoords.Y + t * (v2.texCoords.Y - v1.texCoords.Y));
+
+                //插值计算法向量坐标
+                intersection.normal = new Vector3f(
+                        v1.normal.X + t * (v2.normal.X - v1.normal.X),
+                        v1.normal.Y + t * (v2.normal.Y - v1.normal.Y),
+                        v1.normal.Z + t * (v2.normal.Z - v1.normal.Z)
+                );
 
                 //交点放到输出
                 out.add(intersection);

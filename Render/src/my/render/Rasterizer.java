@@ -77,13 +77,20 @@ public class Rasterizer {
                 barycentric.Y *= zN;   // j * 1/Z2 * Zn
                 barycentric.Z *= zN;   // k * 1/Z3 * Zn
 
-                //插值计算 uv
-                float u = (barycentric.X * vertices[0].texCoords.X + barycentric.Y * vertices[1].texCoords.X + barycentric.Z * vertices[2].texCoords.X);
-                float v = (barycentric.X * vertices[0].texCoords.Y + barycentric.Y * vertices[1].texCoords.Y + barycentric.Z * vertices[2].texCoords.Y);
-
                 Vertex frag = new Vertex();
                 frag.pos = new Vector4f(x, y, zN, 1);
-                frag.texCoords = new Vector2f(u, v);
+
+                //插值计算纹理坐标
+                frag.texCoords = new Vector2f(
+                        barycentric.X * vertices[0].texCoords.X + barycentric.Y * vertices[1].texCoords.X + barycentric.Z * vertices[2].texCoords.X,
+                        barycentric.X * vertices[0].texCoords.Y + barycentric.Y * vertices[1].texCoords.Y + barycentric.Z * vertices[2].texCoords.Y);
+
+                //插值计算法向量
+                frag.normal = new Vector3f(
+                        barycentric.X * vertices[0].normal.X + barycentric.Y * vertices[1].normal.X + barycentric.Z * vertices[2].normal.X,
+                        barycentric.X * vertices[0].normal.Y + barycentric.Y * vertices[1].normal.Y + barycentric.Z * vertices[2].normal.Y,
+                        barycentric.X * vertices[0].normal.Z + barycentric.Y * vertices[1].normal.Z + barycentric.Z * vertices[2].normal.Z);
+
                 //执行片元着色器
                 rgbColor = shader.fragment(frag);
                 pixelBuffer.set(x, y, rgbColor);

@@ -24,6 +24,10 @@ public class Vector4f {
         this(vector3f.X, vector3f.Y, vector3f.Z);
     }
 
+    public Vector4f(Vector3f vector3f, float w) {
+        this(vector3f.X, vector3f.Y, vector3f.Z, w);
+    }
+
     public Vector4f reduce(Vector4f right) {
         return new Vector4f(X - right.X, Y - right.Y, Z - right.Z, W - right.W);
     }

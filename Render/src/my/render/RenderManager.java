@@ -29,6 +29,10 @@ public class RenderManager {
         render.setShader(shader);
     }
 
+    public void setClearColor(Vector3i color) {
+        render.setClearColor(color);
+    }
+
     public void render() {
         //重置缓冲区
         render.clearBuffers();

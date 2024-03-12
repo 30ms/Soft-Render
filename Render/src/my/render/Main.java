@@ -32,25 +32,35 @@ public class Main {
             new Vector2f(1.0f, 0.0f),
     };
 
+    //法向量
+    static Vector3f[] normals = new Vector3f[]{
+            new Vector3f(0.0f, 0.0f, 1.0f),     //Z+
+            new Vector3f(0.0f, 0.0f, -1.0f),    //Z-
+            new Vector3f(0.0f, 1.0f, 0.0f),     //Y+
+            new Vector3f(0.0f, -1.0f, 0.0f),    //Y-
+            new Vector3f(1.0f, 0.0f, 0.0f),     //X+
+            new Vector3f(-1.0f, 0.0f, 0.0f)     //X-
+    };
+
     static Face[] faces = new Face[]
             {
-                    new Face(new int[]{0, 1, 2}, new int[]{0, 1, 2}, new int[]{}),     //Z+
-                    new Face(new int[]{0, 2, 3}, new int[]{0, 2, 3}, new int[]{}),
+                    new Face(new int[]{0, 1, 2}, new int[]{0, 1, 2}, new int[]{0,0,0}),     //Z+
+                    new Face(new int[]{0, 2, 3}, new int[]{0, 2, 3}, new int[]{0,0,0}),
 
-                    new Face(new int[]{7, 6, 5}, new int[]{0, 1, 2}, new int[]{}),     //Z-
-                    new Face(new int[]{7, 5, 4}, new int[]{0, 2, 3}, new int[]{}),
+                    new Face(new int[]{7, 6, 5}, new int[]{0, 1, 2}, new int[]{1,1,1}),     //Z-
+                    new Face(new int[]{7, 5, 4}, new int[]{0, 2, 3}, new int[]{1,1,1}),
 
-                    new Face(new int[]{4, 0, 3}, new int[]{0, 1, 2}, new int[]{}),     //Y+
-                    new Face(new int[]{4, 3, 7}, new int[]{0, 2, 3}, new int[]{}),
+                    new Face(new int[]{4, 0, 3}, new int[]{0, 1, 2}, new int[]{2,2,2}),     //Y+
+                    new Face(new int[]{4, 3, 7}, new int[]{0, 2, 3}, new int[]{2,2,2}),
 
-                    new Face(new int[]{1, 5, 6}, new int[]{0, 1, 2}, new int[]{}),     //Y-
-                    new Face(new int[]{1, 6, 2}, new int[]{0, 2, 3}, new int[]{}),
+                    new Face(new int[]{1, 5, 6}, new int[]{0, 1, 2}, new int[]{3,3,3}),     //Y-
+                    new Face(new int[]{1, 6, 2}, new int[]{0, 2, 3}, new int[]{3,3,3}),
 
-                    new Face(new int[]{4, 5, 1}, new int[]{0, 1, 2}, new int[]{}),     //x+
-                    new Face(new int[]{4, 1, 0}, new int[]{0, 2, 3}, new int[]{}),
+                    new Face(new int[]{3, 2, 6}, new int[]{0, 1, 2}, new int[]{4,4,4}),     //x+
+                    new Face(new int[]{3, 6, 7}, new int[]{0, 2, 3}, new int[]{4,4,4}),
 
-                    new Face(new int[]{3, 2, 6}, new int[]{0, 1, 2}, new int[]{}),     //x-
-                    new Face(new int[]{3, 6, 7}, new int[]{0, 2, 3}, new int[]{})
+                    new Face(new int[]{4, 5, 1}, new int[]{0, 1, 2}, new int[]{5,5,5}),     //x-
+                    new Face(new int[]{4, 1, 0}, new int[]{0, 2, 3}, new int[]{5,5,5}),
             };
 
     static Texture<Vector3i> texture = new Texture<>(new Vector3i[]
@@ -66,20 +76,24 @@ public class Main {
     //每16ms更新一次
     static long MS_PER_UPDATE = 16;
     static Vector3i COLOR_WHITE = new Vector3i(255, 255, 255);
+    //平行光向量
+    static Vector3f LIGHT_DIR = new Vector3f(0, 0, -1);
+
     public static void main(String[] args) {
 
         Vector2i terminalSize = new Vector2i(120, 50);
         DisplayManager displayManager = new WindowsConsoleDisplayManager(terminalSize.X, terminalSize.Y);
 
 
-        Model model = new Model(new Vector3f(0, 0, 0), new Vector3f(1, 1, 1), new Vector3f(0, 0, 0), new Mesh(vertices, uvs, new Vector3f[]{}, faces));
+        Model model = new Model(new Vector3f(0, 0, 0), new Vector3f(1, 1, 1), new Vector3f(0, 0, 0), new Mesh(vertices, uvs, normals, faces));
         Model[] models = new Model[]{model};
-        Camera camera = new Camera(new Vector3f(0, 0, 1), new Vector3f(0, 0, 0), new Vector3f(0, 1, 0), 90, (float) terminalSize.X / terminalSize.Y, 0.5f, 50);
+        Camera camera = new Camera(new Vector3f(0, 0, 1.5f), new Vector3f(0, 0, 0), new Vector3f(0, 1, 0), 90, (float) terminalSize.X / terminalSize.Y, 0.5f, 50);
         SceneManager sceneManager = new SceneManager();
         sceneManager.addScene("main", new Scene(camera, Arrays.stream(models).collect(Collectors.toList())));
         sceneManager.switchScene("main");
         RenderManager renderManager = new RenderManager(displayManager, sceneManager);
-        renderManager.setShader(new TextureMapShader(texture));
+        renderManager.setShader(new PhongShader(LIGHT_DIR, texture));
+        renderManager.setClearColor(COLOR_WHITE);
         long previous = System.currentTimeMillis();
         long lag = 0, time = 0;
         long frame = 0, lastSecondTime = 0, lastSecondFrame = 0, framesPerSecond = 0;
