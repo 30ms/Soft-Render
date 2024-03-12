@@ -9,24 +9,18 @@ package my.render;
 public class TextureMapShader extends AbstractShader{
 
     Texture<Vector3i> texture;
-    Vector2f[] uvs = new Vector2f[3];
-    Vector3f[] normals = new Vector3f[3];
 
     public TextureMapShader(Texture<Vector3i> texture) {
         this.texture = texture;
     }
 
     @Override
-    public Vector4f vertex(int index, Vector4f vertex, Vector3f normal, Vector2f uv) {
-        uvs[index] = uv;
-        normals[index] = normal;
-        return v.multiply(m).multiply(vertex);
+    public Vector4f vertex(Vertex vertex) {
+        return v.multiply(m).multiply(vertex.pos);
     }
 
     @Override
-    public Vector3i fragment(Vector3f barycentric) {
-        float u = (barycentric.X * uvs[0].X + barycentric.Y * uvs[1].X + barycentric.Z * uvs[2].X);
-        float v = (barycentric.X * uvs[0].Y + barycentric.Y * uvs[1].Y + barycentric.Z * uvs[2].Y);
-        return texture.getPixel((int) (u * texture.width % texture.width), (int) (v * texture.height % texture.height));
+    public Vector3i fragment(Vertex fragment) {
+        return texture.getPixel((int) (fragment.texCoords.X * texture.width % texture.width), (int) (fragment.texCoords.Y * texture.height % texture.height));
     }
 }

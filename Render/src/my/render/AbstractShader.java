@@ -10,7 +10,7 @@ public abstract class AbstractShader {
     Matrix4x4f m;
     Matrix4x4f v;
 
-    abstract public Vector4f vertex(int index, Vector4f vertex, Vector3f normal, Vector2f uv);
+    abstract public Vector4f vertex(Vertex vertex);
 
-    abstract public Vector3i fragment(Vector3f barycentric);
+    abstract public Vector3i fragment(Vertex fragment);
 }

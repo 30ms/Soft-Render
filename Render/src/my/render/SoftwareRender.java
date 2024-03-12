@@ -1,6 +1,9 @@
 package my.render;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * TODO
@@ -43,23 +46,17 @@ public class SoftwareRender {
 
     public void drawTriangularMesh(Model model) {
         Mesh mesh = model.getMesh();
-        Vector3f[] vertices = mesh.getVertices();
-        Vector2f[] textures = mesh.getUVs();
-        Vector3f[] normals = mesh.getNormals();
-        Face[] faces = mesh.getFaces();
-
-        for (Face face : faces) {
-            Vector4f[] vertices_f = new Vector4f[face.vertexIndices.length];
-            Vector2f[] uvs_f = new Vector2f[face.uvIndices.length];
-            Vector3f[] normals_f = new Vector3f[face.normalsIndices.length];
+        for (Face face : mesh.getFaces()) {
+            Vertex[] vertices = new Vertex[face.vertexIndices.length];
             for (int i = 0; i < face.vertexIndices.length; i++) {
-                vertices_f[i] = new Vector4f(vertices[face.vertexIndices[i]]);
+                vertices[i] = new Vertex();
+                vertices[i].pos = new Vector4f(mesh.getVertices()[face.vertexIndices[i]]);
             }
             for (int i = 0; i < face.uvIndices.length; i++) {
-                uvs_f[i] = textures[face.uvIndices[i]];
+                vertices[i].texCoords = mesh.getUVs()[face.uvIndices[i]];
             }
             for (int i = 0; i < face.normalsIndices.length; i++) {
-                normals_f[i] = normals[face.normalsIndices[i]];
+                vertices[i].normal = mesh.getNormals()[face.normalsIndices[i]];
             }
 
             //TODO 背面裁剪
@@ -72,12 +69,83 @@ public class SoftwareRender {
                     .multiply(Matrix4x4f.rotationZ(model.rotation.Z));
             shader.v = camera.viewMat;
             //顶点着色
-            for (int i = 0; i < vertices_f.length; i++) {
-                vertices_f[i] = shader.vertex(i, vertices_f[i], null, uvs_f[i]);
+            for (Vertex value : vertices) {
+                value.pos = shader.vertex(value);
             }
-            //光栅化
-            rasterizer.drawTriangles(vertices_f, camera.projectionMat, shader, zBuffer, pixelBuffer);
+
+            //投影裁剪空间坐标
+            for (Vertex vertex : vertices) {
+                vertex.old = vertex.pos;
+                vertex.pos = camera.projectionMat.multiply(vertex.pos);
+            }
+
+            //裁剪
+           vertices= clipping(vertices);
+
+            //图元组装
+            for (int i = 0; i < vertices.length - 2; i++) {
+                Vertex[] triangle = new Vertex[3];
+                triangle[0] = vertices[0];
+                triangle[1] = vertices[i + 1];
+                triangle[2] = vertices[i + 2];
+                //光栅化
+                rasterizer.drawTriangles(triangle, shader, zBuffer, pixelBuffer);
+            }
         }
+    }
+
+    /**
+     * 裁剪
+     */
+    private Vertex[] clipping(Vertex[] clipSpaceVertices){
+        List<Vertex> out = Arrays.stream(clipSpaceVertices).collect(Collectors.toList());
+        // z >= -w
+        out = clippingPlane(out, new Vector4f(0, 0, 1, 1));
+        // z <= w
+//        out = clipping_plane(out, new Vector4f(0, 0, -1, 1));
+
+        return out.toArray(new Vertex[0]);
+    }
+
+
+    private List<Vertex> clippingPlane(List<Vertex> in, Vector4f plane) {
+        //v1起点，v2终点
+        Vertex v1, v2;
+        List<Vertex> out = new ArrayList<>();
+        int len = in.size();
+        for (int i = 0; i < len; i++) {
+            v1 = in.get((i - 1 + len) % len);
+            v2 = in.get(i);
+
+            float f1 = plane.dotProduct(v1.pos), f2 = plane.dotProduct(v2.pos);
+            float t;
+            Vertex intersection;
+            //存在交点
+            if (f1 * f2 < 0) {
+                //插值系数
+                t = f1 / (f1- f2);
+                //交点
+                intersection = new Vertex();
+                //插值计算顶点坐标
+                intersection.pos = new Vector4f(
+                        v1.pos.X + t * (v2.pos.X - v1.pos.X),
+                        v1.pos.Y + t * (v2.pos.Y - v1.pos.Y),
+                        v1.pos.Z + t * (v2.pos.Z - v1.pos.Z),
+                        v1.pos.W + t * (v2.pos.W - v1.pos.W));
+                //插值计算纹理坐标
+                intersection.texCoords = new Vector2f(
+                        v1.texCoords.X + t * (v2.texCoords.X - v1.texCoords.X),
+                        v1.texCoords.Y + t * (v2.texCoords.Y - v1.texCoords.Y));
+
+                //交点放到输出
+                out.add(intersection);
+            }
+            //终点在内侧
+            if (f2 > 0) {
+                out.add(v2);
+            }
+        }
+        return out;
     }
 
     private boolean backFaceCulling(Vector4f normals, Vector4f vertex, Matrix4x4f worldToModel) {

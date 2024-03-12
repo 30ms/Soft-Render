@@ -11,10 +11,10 @@ import java.io.IOException;
  * @author Liuzhenbin
  * @date 2023/3/24 9:34
  **/
-public class JpgDisplay extends DisplayManager {
+public class JpgDisplayManager extends AbstractDisplayManager {
     private File file;
 
-    public JpgDisplay(int width, int height, File file) {
+    public JpgDisplayManager(int width, int height, File file) {
         super(width,height);
         this.file = file;
     }
@@ -24,7 +24,7 @@ public class JpgDisplay extends DisplayManager {
         BufferedImage bufferedImage = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
         for (int x = 0; x < pixelBuffer.width; x++) {
             for (int y = 0; y < pixelBuffer.height; y++) {
-                Vector3i value = pixelBuffer.get(x,y);
+                Vector3i value = pixelBuffer.get(x, pixelBuffer.height - 1 - y);
                 int r = value.X;
                 int g = value.Y;
                 int b = value.Z;

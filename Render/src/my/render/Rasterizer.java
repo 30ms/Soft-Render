@@ -24,11 +24,9 @@ public class Rasterizer {
         return (b.X - a.X) * (c.Y - a.Y) - (b.Y - a.Y) * (c.X - a.X);
     }
 
-    void drawTriangles(Vector4f[] vertices, Matrix4x4f projectionMat, AbstractShader shader, Buffer<Float> zBuffer, Buffer<Vector3i> pixelBuffer) {
-        //投影裁剪空间坐标
-        Vector4f[] vertices_clip = Arrays.stream(vertices).map(projectionMat::multiply).toArray(Vector4f[]::new);
-        //裁剪
-        if (clipping(vertices_clip)) return;
+    void drawTriangles(Vertex[] vertices, AbstractShader shader, Buffer<Float> zBuffer, Buffer<Vector3i> pixelBuffer) {
+        //裁剪空间
+        Vector4f[] vertices_clip = Arrays.stream(vertices).map(v -> v.pos).toArray(Vector4f[]::new);
         //投影除法, 标准设备坐标 (NDC)
         Vector3f[] vertices_ndc = toNDC(vertices_clip);
         //视口转换
@@ -63,35 +61,34 @@ public class Rasterizer {
                 if (barycentric.X < 0 || barycentric.Y < 0 || barycentric.Z < 0) continue;
 
                 //屏幕空间投影点在观察空间中的Z, 1/Zn = i * 1/Z1 + j * 1/Z2 + k * 1/Z3
-                barycentric.X = barycentric.X / vertices[0].Z;
-                barycentric.Y = barycentric.Y / vertices[1].Z;
-                barycentric.Z = barycentric.Z / vertices[2].Z;
-                float revise_z = 1f / (barycentric.X + barycentric.Y + barycentric.Z);
+                //投影坐标的w = 摄像空间的-Z
+                barycentric.X /= -vertices_clip[0].W;
+                barycentric.Y /= -vertices_clip[1].W;
+                barycentric.Z /= -vertices_clip[2].W;
+
+                float zN = 1f / (barycentric.X + barycentric.Y + barycentric.Z);
+
                 //ZBuffer测试
-                if (zBuffer.get(x, y) > revise_z) continue;
-                zBuffer.set(x, y, revise_z);
+                if (zBuffer.get(x, y) > zN) continue;
+                zBuffer.set(x, y, zN);
 
                 //插值变量矫正, 属性插值公式: In = (i * I1/Z1 + j * I2/Z2 + k * I3/Z3) * zn
-                barycentric.X *= revise_z;   // i * 1/Z1 * Zn
-                barycentric.Y *= revise_z;   // j * 1/Z2 * Zn
-                barycentric.Z *= revise_z;   // k * 1/Z3 * Zn
+                barycentric.X *= zN;   // i * 1/Z1 * Zn
+                barycentric.Y *= zN;   // j * 1/Z2 * Zn
+                barycentric.Z *= zN;   // k * 1/Z3 * Zn
 
+                //插值计算 uv
+                float u = (barycentric.X * vertices[0].texCoords.X + barycentric.Y * vertices[1].texCoords.X + barycentric.Z * vertices[2].texCoords.X);
+                float v = (barycentric.X * vertices[0].texCoords.Y + barycentric.Y * vertices[1].texCoords.Y + barycentric.Z * vertices[2].texCoords.Y);
+
+                Vertex frag = new Vertex();
+                frag.pos = new Vector4f(x, y, zN, 1);
+                frag.texCoords = new Vector2f(u, v);
                 //执行片元着色器
-                rgbColor = shader.fragment(barycentric);
+                rgbColor = shader.fragment(frag);
                 pixelBuffer.set(x, y, rgbColor);
             }
         }
-    }
-
-    private boolean clipping(Vector4f[] clipSpaceVertices) {
-        int count = 0;
-        for (Vector4f vertex : clipSpaceVertices) {
-            //判断点是否在外面
-            if((vertex.X < -vertex.W || vertex.X > vertex.W)  && (vertex.Y < -vertex.W || vertex.Y > vertex.W) && (vertex.Z < -vertex.W || vertex.Z > vertex.W))
-                count++;
-        }
-        //是否全部点都在外面
-        return count == clipSpaceVertices.length;
     }
 
     private Vector3f[] toNDC(Vector4f[] vertices) {

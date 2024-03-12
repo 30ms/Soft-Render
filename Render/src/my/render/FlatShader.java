@@ -12,12 +12,12 @@ public class FlatShader extends AbstractShader {
 
 
     @Override
-    public Vector4f vertex(int index, Vector4f vertex, Vector3f normal, Vector2f uv) {
-        return v.multiply(m).multiply(vertex);
+    public Vector4f vertex(Vertex vertex) {
+        return v.multiply(m).multiply(vertex.pos);
     }
 
     @Override
-    public Vector3i fragment(Vector3f barycentric) {
+    public Vector3i fragment(Vertex fragment) {
         return rgb;
     }
 }
