@@ -21,6 +21,6 @@ public class TextureMapShader extends AbstractShader{
 
     @Override
     public Vector3i fragment(Vertex fragment) {
-        return texture.getPixel((int) (fragment.texCoords.X * texture.width % texture.width), (int) (fragment.texCoords.Y * texture.height % texture.height));
+        return texture.getPixel(fragment.texCoords.X, fragment.texCoords.Y);
     }
 }

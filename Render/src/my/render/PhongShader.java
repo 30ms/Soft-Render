@@ -26,7 +26,7 @@ public class PhongShader extends AbstractShader{
 
     @Override
     public Vector3i fragment(Vertex fragment) {
-        Vector3i color = texture.getPixel((int) (fragment.texCoords.X * texture.width % texture.width), (int) (fragment.texCoords.Y * texture.height % texture.height));
+        Vector3i color = texture.getPixel(fragment.texCoords.X, fragment.texCoords.Y);
         //光照向量的视图空间坐标
         Vector3f ligDir_view = v.multiply(new Vector4f(lightDir, 0)).toVector3f();
         ligDir_view.normalized();

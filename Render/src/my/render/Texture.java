@@ -31,4 +31,9 @@ public class Texture<T> {
     {
         return pixels[x][y];
     }
+
+    public T getPixel(float u, float v) {
+        return getPixel((int) (u * width % width), (int) (v * height % height));
+    }
+
 }
