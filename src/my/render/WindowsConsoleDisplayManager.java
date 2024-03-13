@@ -20,7 +20,7 @@ public class WindowsConsoleDisplayManager extends AbstractDisplayManager {
         }
     }
 
-    public void swapBuffer(Buffer<Vector3i> pixelBuffer) {
+    public void display(Buffer<Vector3i> pixelBuffer) {
         //TODO 渲染像素
         int ansiColorCode = -1;
         int lastColorRgb8 = -1;

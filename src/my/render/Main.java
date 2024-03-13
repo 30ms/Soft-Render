@@ -85,7 +85,7 @@ public class Main {
         SceneManager sceneManager = new SceneManager();
         sceneManager.addScene("main", new Scene(camera, Arrays.stream(models).collect(Collectors.toList())));
         sceneManager.switchScene("main");
-        RenderManager renderManager = new RenderManager(displayManager, sceneManager);
+        RenderManager renderManager = new RenderManager(sceneManager, terminalSize.X, terminalSize.Y);
         renderManager.setShader(new PhongShader(LIGHT_DIR, texture));
         renderManager.setClearColor(COLOR_WHITE);
         long previous = System.currentTimeMillis();
@@ -113,10 +113,13 @@ public class Main {
                 lag -= MS_PER_UPDATE;
             }
 
-            render(renderManager);
+            renderManager.render();
+            frame++;
+
+            //同步显示像素缓冲区的数据(将扫描缓冲区打印显示也加入到一帧中,否则会因为帧率大于显示刷新率而出现闪烁)
+            displayManager.display(renderManager.getRenderBuffer());
             displayManager.drawText(0, displayManager.getHeight() - 2, COLOR_WHITE, "摄影机: w,s,a,d,z,c 前后左右上下, i,k,j,l 上下左右摇头 | x 退出");
             displayManager.drawText(0, displayManager.getHeight() - 1, COLOR_WHITE, framesPerSecond + "FPS | time:" + time / 1000);
-            frame++;
         }
     }
 

@@ -19,7 +19,7 @@ public class JpgDisplayManager extends AbstractDisplayManager {
         this.file = file;
     }
 
-    public void swapBuffer(Buffer<Vector3i> pixelBuffer) {
+    public void display(Buffer<Vector3i> pixelBuffer) {
 
         BufferedImage bufferedImage = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
         for (int x = 0; x < pixelBuffer.width; x++) {

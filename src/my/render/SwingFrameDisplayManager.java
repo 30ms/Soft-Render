@@ -28,7 +28,7 @@ public class SwingFrameDisplayManager extends AbstractDisplayManager {
     }
 
     @Override
-    public void swapBuffer(Buffer<Vector3i> pixelBuffer) {
+    public void display(Buffer<Vector3i> pixelBuffer) {
         for (int y = 0; y < pixelBuffer.height; y++) {
             for (int x = 0; x < pixelBuffer.width; x++) {
                 Vector3i value = pixelBuffer.get(x, pixelBuffer.height - 1 - y);
@@ -41,4 +41,8 @@ public class SwingFrameDisplayManager extends AbstractDisplayManager {
         jFrame.repaint();
     }
 
+    @Override
+    public void drawText(int x, int y, Vector3i rgb, String text) {
+        System.out.println(text);
+    }
 }

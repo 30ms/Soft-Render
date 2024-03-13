@@ -14,7 +14,8 @@ import java.util.stream.Collectors;
 public class SoftwareRender {
     private Camera camera;
     private AbstractShader shader = new FlatShader();
-    private Buffer<Vector3i> pixelBuffer;
+    private Buffer<Vector3i>[] pixelBuffers = new Buffer[2];
+    private int currentBufferIndex = 0;
     private Buffer<Float> zBuffer;
     private final Rasterizer rasterizer = Rasterizer.INSTINSE;
     public static final SoftwareRender INSTINCE = new SoftwareRender();
@@ -23,21 +24,33 @@ public class SoftwareRender {
     }
 
     public void buildBuffer(int width, int height) {
-        this.pixelBuffer = new Buffer<>(width, height, new Vector3i(0, 0, 0));
+        for (int i = 0; i < pixelBuffers.length; i++) {
+            this.pixelBuffers[i] = new Buffer<>(width, height, new Vector3i(0, 0, 0));
+        }
         this.zBuffer = new Buffer<>(width, height, -Float.MAX_VALUE);
     }
 
     public void clearBuffers() {
         zBuffer.clear();
-        pixelBuffer.clear();
+        getNextBuffer().clear();
     }
 
     public void setClearColor(Vector3i color) {
-        pixelBuffer.defaultValue = color;
+        for (Buffer buffer : pixelBuffers) {
+            buffer.defaultValue = color;
+        }
     }
 
-    public Buffer<Vector3i> getRenderTarget() {
-        return pixelBuffer;
+    public Buffer<Vector3i> getCurrentBuffer() {
+        return pixelBuffers[currentBufferIndex];
+    }
+
+    private Buffer<Vector3i> getNextBuffer() {
+        return pixelBuffers[1 - currentBufferIndex];
+    }
+
+    public void swapBuffers() {
+        currentBufferIndex = 1 - currentBufferIndex;
     }
 
     public void setCamera(Camera camera) {
@@ -93,7 +106,7 @@ public class SoftwareRender {
                 triangle[1] = vertices[i + 1];
                 triangle[2] = vertices[i + 2];
                 //光栅化
-                rasterizer.drawTriangles(triangle, shader, zBuffer, pixelBuffer);
+                rasterizer.drawTriangles(triangle, shader, zBuffer, getNextBuffer());
             }
         }
     }

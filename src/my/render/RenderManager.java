@@ -11,18 +11,15 @@ import java.util.Queue;
  **/
 public class RenderManager {
 
-    private DisplayManager displayManager;
-
     private SceneManager sceneManager;
 
     private final SoftwareRender render = SoftwareRender.INSTINCE;
 
     private final Queue<Model> renderObjectQueue = new ArrayDeque<>();
 
-    public RenderManager(DisplayManager displayManager, SceneManager sceneManager) {
-        this.displayManager = displayManager;
+    public RenderManager(SceneManager sceneManager, int width, int height) {
         this.sceneManager = sceneManager;
-        render.buildBuffer(displayManager.getWidth(), displayManager.getHeight());
+        render.buildBuffer(width, height);
     }
 
     public void setShader(AbstractShader shader) {
@@ -49,8 +46,7 @@ public class RenderManager {
             }
         }
         //交换显示的像素缓冲区
-        displayManager.swapBuffer(render.getRenderTarget());
-
+        render.swapBuffers();
         //将相机设置为空以防场景发生变化
         render.setCamera(null);
     }
@@ -60,5 +56,8 @@ public class RenderManager {
         render.setCamera(scene.getMainCamera());
         //设置渲染队列为可见的模型队列
         scene.getModelsInScene().forEach(renderObjectQueue::offer);
+    }
+    public Buffer<Vector3i> getRenderBuffer() {
+        return render.getCurrentBuffer();
     }
 }

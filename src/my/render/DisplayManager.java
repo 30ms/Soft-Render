@@ -8,7 +8,7 @@ package my.render;
  **/
 public interface DisplayManager {
 
-    void swapBuffer(Buffer<Vector3i> pixelBuffer);
+    void display(Buffer<Vector3i> pixelBuffer);
 
     void drawText(int x, int y, Vector3i rgb, String text);
 
