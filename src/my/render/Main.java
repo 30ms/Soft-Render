@@ -79,7 +79,15 @@ public class Main {
         DisplayManager displayManager = new WindowsConsoleDisplayManager(terminalSize.X, terminalSize.Y);
 
 
-        Model model = new Model(new Vector3f(0, 0, 0), new Vector3f(1, 1, 1), new Vector3f(0, 0, 0), new Mesh(vertices, uvs, normals, faces));
+        Model model = new Model(new Vector3f(0, 0, 0), new Vector3f(1, 1, 1), new Vector3f(0, 0, 0), new Mesh(vertices, uvs, normals, faces)) {
+            @Override
+            public void update(long delta) {
+                rotation.Y += delta * 0.003;
+                rotation.X += delta * 0.003;
+                rotation.Z += delta * 0.003;
+            }
+        };
+
         Model[] models = new Model[]{model};
         Camera camera = new Camera(new Vector3f(0, 0, 1.5f), new Vector3f(0, 0, 0), new Vector3f(0, 1, 0), 90, (float) terminalSize.X / terminalSize.Y, 0.5f, 50);
         SceneManager sceneManager = new SceneManager();
@@ -109,7 +117,8 @@ public class Main {
 
             while (lag >= MS_PER_UPDATE)
             {
-                update(sceneManager, lag);
+                //场景更新
+                sceneManager.updateScene(lag);
                 lag -= MS_PER_UPDATE;
             }
 
@@ -172,19 +181,5 @@ public class Main {
             }
         });
         thread.start();
-    }
-
-    public static void update(SceneManager sceneManager, long delta) {
-        sceneManager.updateScene(delta);
-        //绕XYZ轴旋转
-        sceneManager.getCurrentScene().getModelsInScene().forEach(model -> {
-            model.rotation.Y += delta * 0.003;
-            model.rotation.X += delta * 0.003;
-            model.rotation.Z += delta * 0.003;
-        });
-    }
-
-    public static void render(RenderManager renderManager) {
-        renderManager.render();
     }
 }
