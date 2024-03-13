@@ -73,6 +73,8 @@ public class Main {
     //平行光向量
     static Vector3f LIGHT_DIR = new Vector3f(0, 0, -1);
 
+    static Thread inputThread;
+
     public static void main(String[] args) {
 
         Vector2i terminalSize = new Vector2i(120, 50);
@@ -133,53 +135,55 @@ public class Main {
     }
 
     public static void processInput(SceneManager sceneManager) {
-        Thread thread = new Thread(() -> {
-            while (MainLoop) {
-                try {
-                    if (System.in.available() > 0) {
-                        Camera camera = sceneManager.getCurrentScene().getMainCamera();
-                        char key = (char) System.in.read();
-                        switch (key) {
-                            case 'w':
-                                camera.forward(0.1f);
-                                break;
-                            case 's':
-                                camera.backward(0.1f);
-                                break;
-                            case 'a':
-                                camera.left(0.1f);
-                                break;
-                            case 'd':
-                                camera.right(0.1f);
-                                break;
-                            case 'z':
-                                camera.up(0.1f);
-                                break;
-                            case 'c' :
-                                camera.down(0.1f);
-                                break;
-                            case 'j':
-                                camera.rotation(0, 10, 0);
-                                break;
-                            case 'l':
-                                camera.rotation(0, -10, 0);
-                                break;
-                            case 'i':
-                                camera.rotation(10, 0, 0);
-                                break;
-                            case 'k':
-                                camera.rotation(-10, 0, 0);
-                                break;
-                            case 'x':
-                                MainLoop = false;
+        if (inputThread == null) {
+            inputThread = new Thread(() -> {
+                while (MainLoop) {
+                    try {
+                        if (System.in.available() > 0) {
+                            Camera camera = sceneManager.getCurrentScene().getMainCamera();
+                            char key = (char) System.in.read();
+                            switch (key) {
+                                case 'w':
+                                    camera.forward(0.1f);
+                                    break;
+                                case 's':
+                                    camera.backward(0.1f);
+                                    break;
+                                case 'a':
+                                    camera.left(0.1f);
+                                    break;
+                                case 'd':
+                                    camera.right(0.1f);
+                                    break;
+                                case 'z':
+                                    camera.up(0.1f);
+                                    break;
+                                case 'c' :
+                                    camera.down(0.1f);
+                                    break;
+                                case 'j':
+                                    camera.rotation(0, 10, 0);
+                                    break;
+                                case 'l':
+                                    camera.rotation(0, -10, 0);
+                                    break;
+                                case 'i':
+                                    camera.rotation(10, 0, 0);
+                                    break;
+                                case 'k':
+                                    camera.rotation(-10, 0, 0);
+                                    break;
+                                case 'x':
+                                    MainLoop = false;
+                            }
                         }
+                        Thread.sleep(167);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
                     }
-                    Thread.sleep(167);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
                 }
-            }
-        });
-        thread.start();
+            });
+            inputThread.start();
+        }
     }
 }
