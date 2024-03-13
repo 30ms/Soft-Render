@@ -63,13 +63,7 @@ public class Main {
                     new Face(new int[]{4, 1, 0}, new int[]{0, 2, 3}, new int[]{5,5,5}),
             };
 
-    static Texture<Vector3i> texture = new Texture<>(new Vector3i[]
-            {
-                    new Vector3i(255, 0, 0),
-                    new Vector3i(0, 255, 0),
-                    new Vector3i(0, 0, 255),
-                    new Vector3i(255, 255, 0),
-            }, 2);
+    static Texture<Vector3i> texture = Texture.loadFromFile("img/wood_box.jpg");
 
     //主循环
     static boolean MainLoop = true;
