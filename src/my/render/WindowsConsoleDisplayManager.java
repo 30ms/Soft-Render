@@ -10,7 +10,8 @@ public class WindowsConsoleDisplayManager extends AbstractDisplayManager {
     public WindowsConsoleDisplayManager(int width, int height){
         super(width,height);
         try {
-            WindowsInterop.runPowershellScript("mode con cols=" + width + " lines=" + height);
+            //此处宽*2 是因为使用两个'█'字符代表一个像素
+            WindowsInterop.runPowershellScript("mode con cols=" + width * 2 + " lines=" + height);
             int consoleModeFlags = WindowsInterop.KERNEL32_ENABLE_LINE_INPUT | WindowsInterop.KERNEL32_ENABLE_PROCESSED_INPUT | WindowsInterop.KERNEL32_ENABLE_ECHO_INPUT;
             // Run Powershell with a predefined script that can change the terminal to non-canonical mode.
             WindowsInterop.runPowershellScript(WindowsInterop.getStdinModeChangePowershellScript(consoleModeFlags, false));
@@ -21,28 +22,27 @@ public class WindowsConsoleDisplayManager extends AbstractDisplayManager {
     }
 
     public void display(Buffer<Vector3i> pixelBuffer) {
-        //TODO 渲染像素
-        int ansiColorCode = -1;
-        int lastColorRgb8 = -1;
+        int curColor = -1;
+        int lastColor = -1;
         setConsoleCursorPosition(0, 0);
         //左手系，所以y轴反向
+        Vector3i rgb;
+        StringBuilder stringBuilder = new StringBuilder();
         for (int y = pixelBuffer.height - 1; y >= 0; y--) {
             for (int x = 0; x < pixelBuffer.width; x++) {
-                Vector3i value = pixelBuffer.get(x,y);
-                int r = Math.min((int) ((value.X / 256.0f) * 6), 5) * 36;
-                int g = Math.min((int) ((value.Y / 256.0f) * 6), 5) * 6;
-                int b = Math.min((int) ((value.Z / 256.0f) * 6), 5);
-                //if (0 <= value.X && value.Z <= 5)
-                ansiColorCode = 16 + r + g + b;
-                if (ansiColorCode != lastColorRgb8)
+                rgb = pixelBuffer.get(x,y);
+                curColor = rgb.X << 16 | rgb.Y << 8 | rgb.Z;
+                if (curColor != lastColor)
                 {
-                    System.out.print("\u001b[38;5;" + ansiColorCode + "m");
-                    lastColorRgb8 = ansiColorCode;
+                    stringBuilder.append("\u001b[38;2;").append(rgb.X).append(";").append(rgb.Y).append(";").append(rgb.Z).append("m");
+                    lastColor = curColor;
                 }
-                System.out.print('\u2588');
+                //使用两个'█'字符代表一个像素
+                stringBuilder.append("██");
             }
-            System.out.print("\n"); //  Move to the beginning of the next line.
+            stringBuilder.append("\u001b[1E"); //  Move to the beginning of the next line.
         }
+        System.out.print(stringBuilder);
     }
 
     private void setConsoleCursorPosition(int x, int y)
