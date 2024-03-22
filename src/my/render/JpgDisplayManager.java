@@ -19,16 +19,13 @@ public class JpgDisplayManager extends AbstractDisplayManager {
         this.file = file;
     }
 
-    public void display(Buffer<Vector3i> pixelBuffer) {
+    public void display(Buffer<Vector4f> pixelBuffer) {
 
         BufferedImage bufferedImage = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
         for (int x = 0; x < pixelBuffer.width; x++) {
             for (int y = 0; y < pixelBuffer.height; y++) {
-                Vector3i value = pixelBuffer.get(x, pixelBuffer.height - 1 - y);
-                int r = value.X;
-                int g = value.Y;
-                int b = value.Z;
-                bufferedImage.setRGB(x, y, 65536 * b + 256 * g + r);
+                Vector4f rgba = pixelBuffer.get(x, pixelBuffer.height - 1 - y);
+                bufferedImage.setRGB(x, y, (int) (rgba.W * 255) << 24 + (int) (rgba.Z * 255) << 16 + (int) (rgba.Y * 255) << 8 + (int) rgba.X * 255);
             }
         }
         try {

@@ -63,7 +63,7 @@ public class Main {
                     new Face(new int[]{4, 1, 0}, new int[]{0, 2, 3}, new int[]{5,5,5}),
             };
 
-    static Texture<Vector3i> texture = Texture.loadFromFile("img/wood_box.jpg");
+    static Texture<Vector4f> texture = Texture.loadFromFile("img/wood_box.jpg");
 
     //主循环
     static boolean MainLoop = true;
@@ -77,7 +77,7 @@ public class Main {
 
     public static void main(String[] args) {
 
-        Vector2i terminalSize = new Vector2i(120, 50);
+        Vector2i terminalSize = new Vector2i(50, 50);
         DisplayManager displayManager = new WindowsConsoleDisplayManager(terminalSize.X, terminalSize.Y);
 
 
@@ -97,7 +97,7 @@ public class Main {
         sceneManager.switchScene("main");
         RenderManager renderManager = new RenderManager(sceneManager, terminalSize.X, terminalSize.Y);
         renderManager.setShader(new PhongShader(LIGHT_DIR, texture));
-        renderManager.setClearColor(COLOR_WHITE);
+        renderManager.setClearColor(new Vector4f(1,1,1,1));
         long previous = System.currentTimeMillis();
         long lag = 0, time = 0;
         long frame = 0, lastSecondTime = 0, lastSecondFrame = 0, framesPerSecond = 0;

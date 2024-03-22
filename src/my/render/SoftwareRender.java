@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 public class SoftwareRender {
     private Camera camera;
     private AbstractShader shader = new FlatShader();
-    private Buffer<Vector3i>[] pixelBuffers = new Buffer[2];
+    private Buffer<Vector4f>[] pixelBuffers = new Buffer[2];
     private int currentBufferIndex = 0;
     private Buffer<Float> zBuffer;
     private final Rasterizer rasterizer = Rasterizer.INSTINSE;
@@ -25,7 +25,7 @@ public class SoftwareRender {
 
     public void buildBuffer(int width, int height) {
         for (int i = 0; i < pixelBuffers.length; i++) {
-            this.pixelBuffers[i] = new Buffer<>(width, height, new Vector3i(0, 0, 0));
+            this.pixelBuffers[i] = new Buffer<>(width, height, new Vector4f(0, 0, 0, 1));
         }
         this.zBuffer = new Buffer<>(width, height, -Float.MAX_VALUE);
     }
@@ -35,17 +35,17 @@ public class SoftwareRender {
         getNextBuffer().clear();
     }
 
-    public void setClearColor(Vector3i color) {
+    public void setClearColor(Vector4f color) {
         for (Buffer buffer : pixelBuffers) {
             buffer.defaultValue = color;
         }
     }
 
-    public Buffer<Vector3i> getCurrentBuffer() {
+    public Buffer<Vector4f> getCurrentBuffer() {
         return pixelBuffers[currentBufferIndex];
     }
 
-    private Buffer<Vector3i> getNextBuffer() {
+    private Buffer<Vector4f> getNextBuffer() {
         return pixelBuffers[1 - currentBufferIndex];
     }
 

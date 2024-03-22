@@ -28,14 +28,11 @@ public class SwingFrameDisplayManager extends AbstractDisplayManager {
     }
 
     @Override
-    public void display(Buffer<Vector3i> pixelBuffer) {
+    public void display(Buffer<Vector4f> pixelBuffer) {
         for (int y = 0; y < pixelBuffer.height; y++) {
             for (int x = 0; x < pixelBuffer.width; x++) {
-                Vector3i value = pixelBuffer.get(x, pixelBuffer.height - 1 - y);
-                int r = value.X;
-                int g = value.Y;
-                int b = value.Z;
-                image.setRGB(x, y, ((r << 16) + (g << 8) + b));
+                Vector4f rgba = pixelBuffer.get(x, pixelBuffer.height - 1 - y);
+                image.setRGB(x, y, (int) (rgba.W * 255) << 24 | (int) (rgba.X * 255) << 16 | (int) (rgba.Y * 255) << 8 |(int) (rgba.Z * 255));
             }
         }
         jFrame.repaint();

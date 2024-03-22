@@ -9,9 +9,9 @@ package my.render;
 public class PhongShader extends AbstractShader{
 
     private Vector3f lightDir;
-    private Texture<Vector3i> texture;
+    private Texture<Vector4f> texture;
 
-    public PhongShader(Vector3f lightDir, Texture<Vector3i> texture) {
+    public PhongShader(Vector3f lightDir, Texture<Vector4f> texture) {
         this.lightDir = lightDir;
         this.texture = texture;
     }
@@ -25,15 +25,15 @@ public class PhongShader extends AbstractShader{
     }
 
     @Override
-    public Vector3i fragment(Vertex fragment) {
-        Vector3i color = texture.getPixel(fragment.texCoords.X, fragment.texCoords.Y);
+    public Vector4f fragment(Vertex fragment) {
+        Vector4f color = texture.sample(fragment.texCoords.X, fragment.texCoords.Y);
         //光照向量的视图空间坐标
         Vector3f ligDir_view = v.multiply(new Vector4f(lightDir, 0)).toVector3f();
         ligDir_view.normalized();
         //计算光强
         float intensity = ligDir_view.scale(-1).dotProduct(fragment.normal);
         intensity = Math.max(0, intensity);
-        return color.multiply(intensity);
+        return new Vector4f(color.X * intensity, color.Y * intensity, color.Z * intensity, color.W);
     }
 
 }

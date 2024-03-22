@@ -21,20 +21,22 @@ public class WindowsConsoleDisplayManager extends AbstractDisplayManager {
         }
     }
 
-    public void display(Buffer<Vector3i> pixelBuffer) {
+    public void display(Buffer<Vector4f> pixelBuffer) {
         int curColor = -1;
         int lastColor = -1;
         setConsoleCursorPosition(0, 0);
         //左手系，所以y轴反向
-        Vector3i rgb;
+        Vector4f rgba; int r,g,b,a;
         StringBuilder stringBuilder = new StringBuilder();
         for (int y = pixelBuffer.height - 1; y >= 0; y--) {
             for (int x = 0; x < pixelBuffer.width; x++) {
-                rgb = pixelBuffer.get(x,y);
-                curColor = rgb.X << 16 | rgb.Y << 8 | rgb.Z;
+                rgba = pixelBuffer.get(x,y);
+                r = (int) (rgba.X * 255); g = (int) (rgba.Y * 255);
+                b = (int) (rgba.Z * 255); a = (int) (rgba.W * 255);
+                curColor = a << 24 | r << 16 | g << 8 | b;
                 if (curColor != lastColor)
                 {
-                    stringBuilder.append("\u001b[38;2;").append(rgb.X).append(";").append(rgb.Y).append(";").append(rgb.Z).append("m");
+                    stringBuilder.append("\u001b[38;2;").append(r).append(";").append(g).append(";").append(b).append("m");
                     lastColor = curColor;
                 }
                 //使用两个'█'字符代表一个像素

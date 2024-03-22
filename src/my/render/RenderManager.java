@@ -26,7 +26,7 @@ public class RenderManager {
         render.setShader(shader);
     }
 
-    public void setClearColor(Vector3i color) {
+    public void setClearColor(Vector4f color) {
         render.setClearColor(color);
     }
 
@@ -57,7 +57,7 @@ public class RenderManager {
         //设置渲染队列为可见的模型队列
         scene.getModelsInScene().forEach(renderObjectQueue::offer);
     }
-    public Buffer<Vector3i> getRenderBuffer() {
+    public Buffer<Vector4f> getRenderBuffer() {
         return render.getCurrentBuffer();
     }
 }

@@ -24,13 +24,13 @@ public class Rasterizer {
         return (b.X - a.X) * (c.Y - a.Y) - (b.Y - a.Y) * (c.X - a.X);
     }
 
-    void drawTriangles(Vertex[] vertices, AbstractShader shader, Buffer<Float> zBuffer, Buffer<Vector3i> pixelBuffer) {
+    void drawTriangles(Vertex[] vertices, AbstractShader shader, Buffer<Float> zBuffer, Buffer<Vector4f> pixelBuffer) {
         //裁剪空间
         Vector4f[] vertices_clip = Arrays.stream(vertices).map(v -> v.pos).toArray(Vector4f[]::new);
         //投影除法, 标准设备坐标 (NDC)
         Vector3f[] vertices_ndc = toNDC(vertices_clip);
         //视口转换
-        Vector2f[] vertices_vp = viewpointTransform(pixelBuffer, vertices_ndc);
+        Vector2f[] vertices_vp = viewpointTransform(pixelBuffer.width, pixelBuffer.height, vertices_ndc);
         //投影平面的3个点
         Vector2f a = vertices_vp[0], b = vertices_vp[1], c = vertices_vp[2];
 
@@ -45,7 +45,7 @@ public class Rasterizer {
 
         float areaABC = edg(a, b, c);
 
-        Vector3i rgbColor;
+        Vector4f rgbaColor;
 
         for (int y = (int) startY; y < endY; y++) {
             for (int x = (int) startX; x < endX; x++) {
@@ -92,8 +92,11 @@ public class Rasterizer {
                         barycentric.X * vertices[0].normal.Z + barycentric.Y * vertices[1].normal.Z + barycentric.Z * vertices[2].normal.Z);
 
                 //执行片元着色器
-                rgbColor = shader.fragment(frag);
-                pixelBuffer.set(x, y, rgbColor);
+                rgbaColor = shader.fragment(frag);
+                Vector4f dstColor = pixelBuffer.get(x, y);
+                //透明度混合(alpha blending)
+                //混合公式: res = src * (srcAlpha) + dst * (1-srcAlpha)
+                pixelBuffer.set(x, y, rgbaColor.scale(rgbaColor.W).add(dstColor.scale(1 - rgbaColor.W)));
             }
         }
     }
@@ -104,9 +107,9 @@ public class Rasterizer {
                 .toArray(Vector3f[]::new);
     }
 
-    private Vector2f[] viewpointTransform(Buffer<Vector3i> pixelBuffer, Vector3f[] vertices) {
+    private Vector2f[] viewpointTransform(int width, int height, Vector3f[] vertices) {
         return Arrays.stream(vertices)
-                .map(vector3f -> new Vector2f((float) ((vector3f.X + 1) * pixelBuffer.width * 0.5), (float) ((vector3f.Y + 1) * pixelBuffer.height * 0.5)))
+                .map(vector3f -> new Vector2f((float) ((vector3f.X + 1) * width * 0.5), (float) ((vector3f.Y + 1) * height * 0.5)))
                 .toArray(Vector2f[]::new);
     }
 }

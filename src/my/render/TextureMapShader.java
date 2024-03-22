@@ -8,9 +8,9 @@ package my.render;
  **/
 public class TextureMapShader extends AbstractShader{
 
-    Texture<Vector3i> texture;
+    Texture<Vector4f> texture;
 
-    public TextureMapShader(Texture<Vector3i> texture) {
+    public TextureMapShader(Texture<Vector4f> texture) {
         this.texture = texture;
     }
 
@@ -20,7 +20,7 @@ public class TextureMapShader extends AbstractShader{
     }
 
     @Override
-    public Vector3i fragment(Vertex fragment) {
-        return texture.getPixel(fragment.texCoords.X, fragment.texCoords.Y);
+    public Vector4f fragment(Vertex fragment) {
+        return texture.sample(fragment.texCoords.X, fragment.texCoords.Y);
     }
 }

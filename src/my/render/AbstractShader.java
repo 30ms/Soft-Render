@@ -12,5 +12,5 @@ public abstract class AbstractShader {
 
     abstract public Vector4f vertex(Vertex vertex);
 
-    abstract public Vector3i fragment(Vertex fragment);
+    abstract public Vector4f fragment(Vertex fragment);
 }

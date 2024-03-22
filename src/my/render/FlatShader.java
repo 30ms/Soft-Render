@@ -8,7 +8,7 @@ package my.render;
  **/
 public class FlatShader extends AbstractShader {
 
-    Vector3i rgb = new Vector3i(255, 255, 255);
+    Vector4f rgba = new Vector4f(1, 1, 1, 1);
 
 
     @Override
@@ -17,7 +17,7 @@ public class FlatShader extends AbstractShader {
     }
 
     @Override
-    public Vector3i fragment(Vertex fragment) {
-        return rgb;
+    public Vector4f fragment(Vertex fragment) {
+        return rgba;
     }
 }
