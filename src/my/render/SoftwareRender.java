@@ -1,8 +1,6 @@
 package my.render;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -12,13 +10,14 @@ import java.util.stream.Collectors;
  * @date 2022/12/15 19:22
  **/
 public class SoftwareRender {
-    private Camera camera;
-    private AbstractShader shader = new FlatShader();
+    public AbstractShader shader;
     private Buffer<Vector4f>[] pixelBuffers = new Buffer[2];
     private int currentBufferIndex = 0;
     private Buffer<Float> zBuffer;
     private final Rasterizer rasterizer = Rasterizer.INSTINSE;
     public static final SoftwareRender INSTINCE = new SoftwareRender();
+    //纹理映射, 片元着色访问
+    public Map<String, Texture> TEXTURES = new HashMap<>();
 
     private SoftwareRender() {
     }
@@ -53,61 +52,25 @@ public class SoftwareRender {
         currentBufferIndex = 1 - currentBufferIndex;
     }
 
-    public void setCamera(Camera camera) {
-        this.camera = camera;
-    }
-
     public void setShader(AbstractShader shader) {
         this.shader = shader;
     }
 
-    public void drawTriangularMesh(Model model) {
-        Mesh mesh = model.getMesh();
-        for (Face face : mesh.getFaces()) {
-            Vertex[] vertices = new Vertex[face.vertexIndices.length];
-            for (int i = 0; i < face.vertexIndices.length; i++) {
-                vertices[i] = new Vertex();
-                vertices[i].pos = new Vector4f(mesh.getVertices()[face.vertexIndices[i]]);
-            }
-            for (int i = 0; i < face.uvIndices.length; i++) {
-                vertices[i].texCoords = mesh.getUVs()[face.uvIndices[i]];
-            }
-            for (int i = 0; i < face.normalsIndices.length; i++) {
-                vertices[i].normal = mesh.getNormals()[face.normalsIndices[i]];
-            }
-
-            //TODO 背面裁剪
-
+    public void drawTriangular(Vertex[] vertices) {
+        for (Vertex value : vertices) {
             //顶点着色
-            shader.m = Matrix4x4f.translation(model.position)
-                    .multiply(Matrix4x4f.scale(model.scale))
-                    .multiply(Matrix4x4f.rotationX(model.rotation.X))
-                    .multiply(Matrix4x4f.rotationY(model.rotation.Y))
-                    .multiply(Matrix4x4f.rotationZ(model.rotation.Z));
-            shader.v = camera.viewMat;
-            //顶点着色
-            for (Vertex value : vertices) {
-                value.pos = shader.vertex(value);
-            }
-
-            //投影裁剪空间坐标
-            for (Vertex vertex : vertices) {
-                vertex.old = vertex.pos;
-                vertex.pos = camera.projectionMat.multiply(vertex.pos);
-            }
-
-            //裁剪
-           vertices= clipping(vertices);
-
-            //图元组装
-            for (int i = 0; i < vertices.length - 2; i++) {
-                Vertex[] triangle = new Vertex[3];
-                triangle[0] = vertices[0];
-                triangle[1] = vertices[i + 1];
-                triangle[2] = vertices[i + 2];
-                //光栅化
-                rasterizer.drawTriangles(triangle, shader, zBuffer, getNextBuffer());
-            }
+            value.pos = shader.vertexShader(value);
+        }
+        //裁剪
+        vertices= clipping(vertices);
+        //图元组装
+        for (int i = 0; i < vertices.length - 2; i++) {
+            Vertex[] triangle = new Vertex[3];
+            triangle[0] = vertices[0];
+            triangle[1] = vertices[i + 1];
+            triangle[2] = vertices[i + 2];
+            //光栅化
+            rasterizer.drawTriangles(triangle, shader, TEXTURES, zBuffer, getNextBuffer());;
         }
     }
 
@@ -161,6 +124,9 @@ public class SoftwareRender {
                         v1.normal.Z + t * (v2.normal.Z - v1.normal.Z)
                 );
 
+                //执行顶点着色
+                shader.vertexShader(intersection);
+
                 //交点放到输出
                 out.add(intersection);
             }
@@ -170,14 +136,6 @@ public class SoftwareRender {
             }
         }
         return out;
-    }
-
-    private boolean backFaceCulling(Vector4f normals, Vector4f vertex, Matrix4x4f worldToModel) {
-        //摄像机的世界空间位置变换到模型空间， 减去顶点位置得到观察方向向量
-        Vector4f viewDir = worldToModel.multiply(new Vector4f(camera.position)).reduce(vertex);
-        viewDir.normalized();
-        //向量点乘判断夹角是否大于180度
-        return viewDir.dotProduct(normals) <= 0.0;
     }
 
 }

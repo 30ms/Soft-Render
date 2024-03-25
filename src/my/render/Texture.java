@@ -50,6 +50,10 @@ public class Texture<T> {
         return getPixel((int) (u * width % width), (int) (v * height % height));
     }
 
+    public T sample(Vector2f st) {
+        return sample(st.X, st.Y);
+    }
+
     public static Texture<Vector4f> loadFromFile(String path) {
         BufferedImage image;
         try {

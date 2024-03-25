@@ -10,10 +10,14 @@ import java.util.List;
  **/
 public class Scene {
     private Camera mainCamera;
+    private Vector3f lightPos;
+    private Vector3f lightColor;
     private List<Model> modelsInScene;
 
-    public Scene(Camera mainCamera, List<Model> modelsInScene) {
+    public Scene(Camera mainCamera, Vector3f lightPos, Vector3f lightColor, List<Model> modelsInScene) {
         this.mainCamera = mainCamera;
+        this.lightPos= lightPos;
+        this.lightColor = lightColor;
         this.modelsInScene = modelsInScene;
     }
 
@@ -30,4 +34,11 @@ public class Scene {
         return modelsInScene;
     }
 
+    public Vector3f getLightPos() {
+        return lightPos;
+    }
+
+    public Vector3f getLightColor() {
+        return lightColor;
+    }
 }

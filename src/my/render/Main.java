@@ -70,8 +70,9 @@ public class Main {
     //每16ms更新一次
     static long MS_PER_UPDATE = 16;
     static Vector3i COLOR_WHITE = new Vector3i(255, 255, 255);
-    //平行光向量
-    static Vector3f LIGHT_DIR = new Vector3f(0, 0, -1);
+    //光源位置
+    static Vector3f LIGHT_POS = new Vector3f(0.5f, 0.5f, 2);
+    static Vector3f LIGHT_COLOR = new Vector3f(1, 1, 1);
 
     static Thread inputThread;
 
@@ -81,7 +82,7 @@ public class Main {
         DisplayManager displayManager = new WindowsConsoleDisplayManager(terminalSize.X, terminalSize.Y);
 
 
-        Model model = new Model(new Vector3f(0, 0, 0), new Vector3f(1, 1, 1), new Vector3f(0, 0, 0), new Mesh(vertices, uvs, normals, faces)) {
+        Model model = new Model(new Vector3f(0, 0, 0), new Vector3f(1, 1, 1), new Vector3f(0, 0, 0), new Mesh(vertices, uvs, normals, faces, texture)) {
             @Override
             public void update(long delta) {
                 rotation.Y += delta * 0.003;
@@ -93,10 +94,10 @@ public class Main {
         Model[] models = new Model[]{model};
         Camera camera = new Camera(new Vector3f(0, 0, 1.5f), new Vector3f(0, 0, 0), new Vector3f(0, 1, 0), 90, (float) terminalSize.X / terminalSize.Y, 0.5f, 50);
         SceneManager sceneManager = new SceneManager();
-        sceneManager.addScene("main", new Scene(camera, Arrays.stream(models).collect(Collectors.toList())));
+        sceneManager.addScene("main", new Scene(camera, LIGHT_POS, LIGHT_COLOR, Arrays.stream(models).collect(Collectors.toList())));
         sceneManager.switchScene("main");
         RenderManager renderManager = new RenderManager(sceneManager, terminalSize.X, terminalSize.Y);
-        renderManager.setShader(new PhongShader(LIGHT_DIR, texture));
+        renderManager.setShader(new PhongShader());
         renderManager.setClearColor(new Vector4f(1,1,1,1));
         long previous = System.currentTimeMillis();
         long lag = 0, time = 0;

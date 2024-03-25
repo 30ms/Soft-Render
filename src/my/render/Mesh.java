@@ -11,12 +11,14 @@ public class Mesh {
     private Vector2f[] uvs;
     private Vector3f[] normals;
     private Face[] faces;
+    private Texture<Vector4f> texture;
 
-    public Mesh(Vector3f[] vertices, Vector2f[] uvs, Vector3f[] normals, Face[] faces) {
+    public Mesh(Vector3f[] vertices, Vector2f[] uvs, Vector3f[] normals, Face[] faces, Texture<Vector4f> texture) {
         this.vertices = vertices;
         this.uvs = uvs;
         this.normals = normals;
         this.faces = faces;
+        this.texture = texture;
     }
 
     public Vector3f[] getVertices() {
@@ -49,5 +51,9 @@ public class Mesh {
 
     public void setFaces(Face[] faces) {
         this.faces = faces;
+    }
+
+    public Texture<Vector4f> getTexture() {
+        return texture;
     }
 }

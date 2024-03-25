@@ -1,6 +1,7 @@
 package my.render;
 
 import java.util.Arrays;
+import java.util.Map;
 
 /**
  * TODO
@@ -24,7 +25,7 @@ public class Rasterizer {
         return (b.X - a.X) * (c.Y - a.Y) - (b.Y - a.Y) * (c.X - a.X);
     }
 
-    void drawTriangles(Vertex[] vertices, AbstractShader shader, Buffer<Float> zBuffer, Buffer<Vector4f> pixelBuffer) {
+    void drawTriangles(Vertex[] vertices, AbstractShader shader, Map<String, Texture> textures, Buffer<Float> zBuffer, Buffer<Vector4f> pixelBuffer) {
         //裁剪空间
         Vector4f[] vertices_clip = Arrays.stream(vertices).map(v -> v.pos).toArray(Vector4f[]::new);
         //投影除法, 标准设备坐标 (NDC)
@@ -77,22 +78,29 @@ public class Rasterizer {
                 barycentric.Y *= zN;   // j * 1/Z2 * Zn
                 barycentric.Z *= zN;   // k * 1/Z3 * Zn
 
-                Vertex frag = new Vertex();
-                frag.pos = new Vector4f(x, y, zN, 1);
+                Fragment frag = new Fragment();
+                //裁剪空间坐标
+                frag.pos = new Vector3f(x, y, zN);
 
-                //插值计算纹理坐标
-                frag.texCoords = new Vector2f(
-                        barycentric.X * vertices[0].texCoords.X + barycentric.Y * vertices[1].texCoords.X + barycentric.Z * vertices[2].texCoords.X,
-                        barycentric.X * vertices[0].texCoords.Y + barycentric.Y * vertices[1].texCoords.Y + barycentric.Z * vertices[2].texCoords.Y);
-
-                //插值计算法向量
-                frag.normal = new Vector3f(
-                        barycentric.X * vertices[0].normal.X + barycentric.Y * vertices[1].normal.X + barycentric.Z * vertices[2].normal.X,
-                        barycentric.X * vertices[0].normal.Y + barycentric.Y * vertices[1].normal.Y + barycentric.Z * vertices[2].normal.Y,
-                        barycentric.X * vertices[0].normal.Z + barycentric.Y * vertices[1].normal.Z + barycentric.Z * vertices[2].normal.Z);
+                //插值计算片元着色器变量
+                for (Map.Entry<String, float[]> varying : vertices[0].shaderVaryings.entrySet()) {
+                    float[] varyingValue = new float[varying.getValue().length];
+                    for (int i = 0; i < varying.getValue().length; i++) {
+                        varyingValue[i] = barycentric.X * vertices[0].shaderVaryings.get(varying.getKey())[i] +
+                                barycentric.Y * vertices[1].shaderVaryings.get(varying.getKey())[i] +
+                                barycentric.Z * vertices[2].shaderVaryings.get(varying.getKey())[i];
+                    }
+                    frag.shaderVaryings.put(varying.getKey(), varyingValue);
+                }
 
                 //执行片元着色器
-                rgbaColor = shader.fragment(frag);
+                rgbaColor = shader.fragmentShader(textures, frag);
+
+                if(rgbaColor.X > 1f) rgbaColor.X = 1f;
+                if(rgbaColor.Y > 1f) rgbaColor.Y = 1f;
+                if(rgbaColor.Z > 1f) rgbaColor.Z = 1f;
+                if(rgbaColor.W > 1f) rgbaColor.W = 1f;
+
                 Vector4f dstColor = pixelBuffer.get(x, y);
                 //透明度混合(alpha blending)
                 //混合公式: res = src * (srcAlpha) + dst * (1-srcAlpha)

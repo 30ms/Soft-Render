@@ -53,7 +53,7 @@ public class Vector4f {
     }
 
     public Vector3f toVector3f() {
-        return new Vector3f(X, Y, Z);
+        return new Vector3f(X/W, Y/W, Z/W);
     }
 
     public Vector4f scale(float s) {

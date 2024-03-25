@@ -45,4 +45,9 @@ public class Vector3f {
     public float dotProduct(Vector3f right) {
         return X * right.X + Y * right.Y + Z * right.Z;
     }
+
+    ///反射向量
+    public Vector3f reflect(Vector3f normal) {
+        return this.reduce(normal.scale(2 * this.dotProduct(normal)));
+    }
 }
