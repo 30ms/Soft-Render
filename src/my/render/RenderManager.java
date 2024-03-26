@@ -60,7 +60,7 @@ public class RenderManager {
                 render.shader.putUniformMat4x4("normalMat", modelMat.inverse().transpose());
                 Mesh mesh = model.getMesh();
                 //绑定纹理
-                render.TEXTURES.put("texture", mesh.getTexture());
+                render.TEXTURES.putAll(mesh.getTextures());
 
                 //遍历模型的每个面
                 for (Face face : mesh.getFaces()) {

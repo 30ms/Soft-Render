@@ -1,5 +1,7 @@
 package my.render;
 
+import java.util.Map;
+
 /**
  * TODO
  *
@@ -11,14 +13,14 @@ public class Mesh {
     private Vector2f[] uvs;
     private Vector3f[] normals;
     private Face[] faces;
-    private Texture<Vector4f> texture;
+    private Map<String, Texture<Vector4f>> textures;
 
-    public Mesh(Vector3f[] vertices, Vector2f[] uvs, Vector3f[] normals, Face[] faces, Texture<Vector4f> texture) {
+    public Mesh(Vector3f[] vertices, Vector2f[] uvs, Vector3f[] normals, Face[] faces, Map<String, Texture<Vector4f>> textures) {
         this.vertices = vertices;
         this.uvs = uvs;
         this.normals = normals;
         this.faces = faces;
-        this.texture = texture;
+        this.textures = textures;
     }
 
     public Vector3f[] getVertices() {
@@ -53,7 +55,7 @@ public class Mesh {
         this.faces = faces;
     }
 
-    public Texture<Vector4f> getTexture() {
-        return texture;
+    public Map<String, Texture<Vector4f>> getTextures() {
+        return textures;
     }
 }

@@ -81,8 +81,15 @@ public class Main {
         Vector2i terminalSize = new Vector2i(50, 50);
         DisplayManager displayManager = new WindowsConsoleDisplayManager(terminalSize.X, terminalSize.Y);
 
-
-        Model model = new Model(new Vector3f(0, 0, 0), new Vector3f(1, 1, 1), new Vector3f(0, 0, 0), new Mesh(vertices, uvs, normals, faces, texture)) {
+        Model model = new Model(
+                new Vector3f(0, 0, 0),
+                new Vector3f(1, 1, 1),
+                new Vector3f(0, 0, 0),
+                new Mesh(vertices,
+                        uvs,
+                        normals,
+                        faces,
+                        Collections.singletonMap("texture", texture))){
             @Override
             public void update(long delta) {
                 rotation.Y += delta * 0.003;
