@@ -22,10 +22,6 @@ public class RenderManager {
         render.buildBuffer(width, height);
     }
 
-    public void setShader(AbstractShader shader) {
-        render.setShader(shader);
-    }
-
     public void setClearColor(Vector4f color) {
         render.setClearColor(color);
     }
@@ -35,33 +31,19 @@ public class RenderManager {
         render.clearBuffers();
 
         Scene scene = sceneManager.getCurrentScene();
-        Camera camera = scene.getMainCamera();
         //设置渲染队列为可见的模型队列
         scene.getModelsInScene().forEach(renderObjectQueue::offer);
-        //设置全局变量
-        render.shader.putUniformV3f("lightPos", scene.getLightPos());
-        render.shader.putUniformV3f("lightColor", scene.getLightColor());
-        render.shader.putUniformV3f("viewPos", camera.position);
-        render.shader.putUniformMat4x4("viewMat", camera.viewMat);
-        render.shader.putUniformMat4x4("projMat", camera.projectionMat);
-
         //渲染模型
         while (!renderObjectQueue.isEmpty()) {
             Model model = renderObjectQueue.poll();
             if (model != null) {
-                //设置模型变换矩阵全局变量
-                Matrix4x4f modelMat = Matrix4x4f.translation(model.position)
-                        .multiply(Matrix4x4f.scale(model.scale))
-                        .multiply(Matrix4x4f.rotationX(model.rotation.X))
-                        .multiply(Matrix4x4f.rotationY(model.rotation.Y))
-                        .multiply(Matrix4x4f.rotationZ(model.rotation.Z));
-                render.shader.putUniformMat4x4("modelMat", modelMat);
-                //向量不能直接应用模型变换, 需要取逆然后转置 (m^-1)T
-                render.shader.putUniformMat4x4("normalMat", modelMat.inverse().transpose());
+                //设置着色器
+                render.shader = model.shader;
+                model.setupShader.accept(render.shader);
+
                 Mesh mesh = model.getMesh();
                 //绑定纹理
                 render.TEXTURES.putAll(mesh.getTextures());
-
                 //遍历模型的每个面
                 for (Face face : mesh.getFaces()) {
                     Vertex[] vertices = new Vertex[face.vertexIndices.length];

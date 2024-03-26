@@ -1,7 +1,6 @@
 package my.render;
 
-import java.util.Arrays;
-import java.util.stream.Collectors;
+import java.util.Collections;
 
 /**
  * TODO
@@ -81,6 +80,7 @@ public class Main {
         Vector2i terminalSize = new Vector2i(50, 50);
         DisplayManager displayManager = new WindowsConsoleDisplayManager(terminalSize.X, terminalSize.Y);
 
+        AbstractShader shader = new PhongShader();
         Model model = new Model(
                 new Vector3f(0, 0, 0),
                 new Vector3f(1, 1, 1),
@@ -89,7 +89,8 @@ public class Main {
                         uvs,
                         normals,
                         faces,
-                        Collections.singletonMap("texture", texture))){
+                        Collections.singletonMap("texture", texture)),
+                shader){
             @Override
             public void update(long delta) {
                 rotation.Y += delta * 0.003;
@@ -97,14 +98,22 @@ public class Main {
                 rotation.Z += delta * 0.003;
             }
         };
-
-        Model[] models = new Model[]{model};
         Camera camera = new Camera(new Vector3f(0, 0, 1.5f), new Vector3f(0, 0, 0), new Vector3f(0, 1, 0), 90, (float) terminalSize.X / terminalSize.Y, 0.5f, 50);
+        //模型的着色器设置
+        model.setupShader = (s) -> {
+            //设置着色器参数
+            s.putUniformV3f("lightPos", LIGHT_POS);
+            s.putUniformV3f("lightColor", LIGHT_COLOR);
+            s.putUniformMat4x4("modelMat", model.getModelMatrix());
+            s.putUniformMat4x4("viewMat", camera.viewMat);
+            s.putUniformMat4x4("projMat", camera.projectionMat);
+            s.putUniformMat4x4("normalMat", model.getModelMatrix().inverse().transpose());
+            s.putUniformV3f("viewPos", camera.position);
+        };
         SceneManager sceneManager = new SceneManager();
-        sceneManager.addScene("main", new Scene(camera, LIGHT_POS, LIGHT_COLOR, Arrays.stream(models).collect(Collectors.toList())));
+        sceneManager.addScene("main", new Scene(Collections.singletonList(model)));
         sceneManager.switchScene("main");
         RenderManager renderManager = new RenderManager(sceneManager, terminalSize.X, terminalSize.Y);
-        renderManager.setShader(new PhongShader());
         renderManager.setClearColor(new Vector4f(1,1,1,1));
         long previous = System.currentTimeMillis();
         long lag = 0, time = 0;
@@ -123,7 +132,7 @@ public class Main {
                 lastSecondTime = time;
             }
 
-            processInput(sceneManager);
+            processInput(camera);
 
             while (lag >= MS_PER_UPDATE)
             {
@@ -142,13 +151,12 @@ public class Main {
         }
     }
 
-    public static void processInput(SceneManager sceneManager) {
+    public static void processInput(Camera camera) {
         if (inputThread == null) {
             inputThread = new Thread(() -> {
                 while (MainLoop) {
                     try {
                         if (System.in.available() > 0) {
-                            Camera camera = sceneManager.getCurrentScene().getMainCamera();
                             char key = (char) System.in.read();
                             switch (key) {
                                 case 'w':

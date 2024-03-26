@@ -52,10 +52,6 @@ public class SoftwareRender {
         currentBufferIndex = 1 - currentBufferIndex;
     }
 
-    public void setShader(AbstractShader shader) {
-        this.shader = shader;
-    }
-
     public void drawTriangular(Vertex[] vertices) {
         for (Vertex value : vertices) {
             //顶点着色
