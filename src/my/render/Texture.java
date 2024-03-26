@@ -17,6 +17,8 @@ public class Texture<T> {
     int width, height;
     T[][] pixels;
     Filtering filtering;
+    Wrapping wrapS, wrapT;
+    T borderColor;
 
     public Texture(T[] rawRgbData, int width)
     {
@@ -32,6 +34,8 @@ public class Texture<T> {
             pixels[x][y] = rawRgbData[i];
         }
         filtering = Filtering.NEAREST;
+        wrapS = Wrapping.REPEAT;
+        wrapT = Wrapping.REPEAT;
     }
 
     public T getPixel(int x, int y)
@@ -44,10 +48,14 @@ public class Texture<T> {
      */
     public T sample(float u, float v) {
         //超出[0,1]范围处理
-        if(u > 1) u = u - (int)u;
-        if(u < 0) u = 1 - ((int) u - u);
-        if(v > 1) v = v - (int)v;
-        if(v < 0) v = 1 - ((int) v - v);
+        if (u < 0.0f || u > 1.0f || v < 0.0f || v > 1.0f) {
+            if (wrapS == Wrapping.CLAMP_TO_BORDER && wrapT == Wrapping.CLAMP_TO_BORDER) {
+                return borderColor;
+            } else {
+                u = wrap(u, wrapS);
+                v = wrap(v, wrapT);
+            }
+        }
 
         switch (filtering) {
             case NEAREST:
@@ -56,6 +64,38 @@ public class Texture<T> {
                 return bilinear(u, v);
             default:
                 throw new RuntimeException("Unknown filtering method");
+        }
+    }
+
+    private float wrap(float v, Wrapping wrapping) {
+        switch (wrapping) {
+            case REPEAT:{
+                int n = (int) v;
+                float f = v - n;
+                if (f < 0) {
+                    f = f + 1;
+                }
+                return f;
+            }
+            case MIRRORED_REPEAT: {
+                int n = (int) v;
+                float f = v - n;
+                if (f < 0) {
+                    f = -f;
+                }
+                return 1- f;
+            }
+            case CLAMP_TO_EDGE: {
+                if (v < 0) {
+                    return 0;
+                } else if (v > 1) {
+                    return 1;
+                } else {
+                    return v;
+                }
+            }
+            default:
+                throw new RuntimeException("Unknown wrapping mode");
         }
     }
 
@@ -120,6 +160,29 @@ public class Texture<T> {
     public enum Filtering {
         NEAREST,
         BILINEAR
+    }
+
+    public enum Wrapping {
+
+        /**
+         * 重复纹理图像
+         */
+        REPEAT,
+
+        /**
+         * 和REPEAT一样，除了重复的图片是镜像放置的
+         */
+        MIRRORED_REPEAT,
+
+        /**
+         * 纹理坐标会在0到1之间。超出的部分会重复纹理坐标的边缘，就是边缘被拉伸
+         */
+        CLAMP_TO_EDGE,
+
+        /**
+         * 超出的部分是用户指定的边缘的颜色
+         */
+        CLAMP_TO_BORDER,
     }
 
 }
