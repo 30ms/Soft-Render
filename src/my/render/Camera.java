@@ -16,8 +16,6 @@ public class Camera {
     float aspect;
     float near;
     float far;
-    Matrix4x4f viewMat;
-    Matrix4x4f projectionMat;
 
     public Camera(Vector3f position, Vector3f target, Vector3f up, float fov, float aspect, float near, float far) {
         this.position = position;
@@ -27,17 +25,17 @@ public class Camera {
         this.aspect = aspect;
         this.near = near;
         this.far = far;
-        updateMat();
     }
 
-    private void updateMat() {
-        this.viewMat = Matrix4x4f.lookAt(position, target, up);
-        this.projectionMat = Matrix4x4f.perspectiveProjection(aspect, fov, near, far);
+    public Matrix4x4f getViewMat() {
+        return Matrix4x4f.lookAt(position, target, up);
     }
 
-    //更新矩阵
+    public Matrix4x4f getProjectionMat() {
+        return Matrix4x4f.perspectiveProjection(aspect, fov, near, far);
+    }
+
     void update(long deltaTime) {
-        updateMat();
     }
 
     public void forward(float length) {

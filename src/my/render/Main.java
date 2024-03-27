@@ -63,17 +63,9 @@ public class Main {
             };
 
     static Texture<Vector4f> texture = Texture.loadFromFile("img/wood_box.jpg");
-
-    //主循环
-    static boolean MainLoop = true;
-    //每16ms更新一次
-    static long MS_PER_UPDATE = 16;
-    static Vector3i COLOR_WHITE = new Vector3i(255, 255, 255);
     //光源位置
     static Vector3f LIGHT_POS = new Vector3f(0.5f, 0.5f, 2);
     static Vector3f LIGHT_COLOR = new Vector3f(1, 1, 1);
-
-    static Thread inputThread;
 
     public static void main(String[] args) {
 
@@ -105,8 +97,8 @@ public class Main {
             s.putUniformV3f("lightPos", LIGHT_POS);
             s.putUniformV3f("lightColor", LIGHT_COLOR);
             s.putUniformMat4x4("modelMat", model.getModelMatrix());
-            s.putUniformMat4x4("viewMat", camera.viewMat);
-            s.putUniformMat4x4("projMat", camera.projectionMat);
+            s.putUniformMat4x4("viewMat", camera.getViewMat());
+            s.putUniformMat4x4("projMat", camera.getProjectionMat());
             s.putUniformMat4x4("normalMat", model.getModelMatrix().inverse().transpose());
             s.putUniformV3f("viewPos", camera.position);
         };
@@ -115,91 +107,32 @@ public class Main {
         sceneManager.switchScene("main");
         RenderManager renderManager = new RenderManager(sceneManager, terminalSize.X, terminalSize.Y);
         renderManager.setClearColor(new Vector4f(1,1,1,1));
-        long previous = System.currentTimeMillis();
-        long lag = 0, time = 0;
-        long frame = 0, lastSecondTime = 0, lastSecondFrame = 0, framesPerSecond = 0;
-        while (MainLoop)
-        {
-            long current = System.currentTimeMillis();
-            long elapsed = current - previous;
-            previous = current;
-            lag += elapsed;
-            time += elapsed;
 
-            if (time - lastSecondTime >= 1000) {
-                framesPerSecond = frame - lastSecondFrame;
-                lastSecondFrame = frame;
-                lastSecondTime = time;
+        RenderLoopSimpleImpl renderLoop = new RenderLoopSimpleImpl(renderManager, displayManager) {
+
+            @Override
+            protected void processRending(RenderMonitorInfo monitorInfo) {
+                super.processRending(monitorInfo);
+                //显示文字
+                getDisplayManager().drawText(0, displayManager.getHeight() - 2, new Vector3i(255, 255, 255), "摄影机: w,s,a,d,z,c 前后左右上下, i,k,j,l 上下左右摇头 | x 退出");
+                getDisplayManager().drawText(0, displayManager.getHeight() - 1, new Vector3i(255, 255, 255), monitorInfo.fps + "FPS | time:" + monitorInfo.time / 1000);
             }
+        };
+        //注册按键控制监听
+        renderLoop.addKeyListener('w', () -> camera.forward(0.1f));
+        renderLoop.addKeyListener('s', () -> camera.backward(0.1f));
+        renderLoop.addKeyListener('a', () -> camera.left(0.1f));
+        renderLoop.addKeyListener('d', () -> camera.right(0.1f));
+        renderLoop.addKeyListener('z', () -> camera.up(0.1f));
+        renderLoop.addKeyListener('c', () -> camera.down(0.1f));
+        renderLoop.addKeyListener('j', () -> camera.rotation(0, 10, 0));
+        renderLoop.addKeyListener('l', () -> camera.rotation(0, -10, 0));
+        renderLoop.addKeyListener('i', () -> camera.rotation(10, 0, 0));
+        renderLoop.addKeyListener('k', () -> camera.rotation(-10, 0, 0));
+        //退出循环
+        renderLoop.addKeyListener('x', renderLoop::stop);
 
-            processInput(camera);
-
-            while (lag >= MS_PER_UPDATE)
-            {
-                //场景更新
-                sceneManager.updateScene(lag);
-                lag -= MS_PER_UPDATE;
-            }
-
-            renderManager.render();
-            frame++;
-
-            //同步显示像素缓冲区的数据(将扫描缓冲区打印显示也加入到一帧中,否则会因为帧率大于显示刷新率而出现闪烁)
-            displayManager.display(renderManager.getRenderBuffer());
-            displayManager.drawText(0, displayManager.getHeight() - 2, COLOR_WHITE, "摄影机: w,s,a,d,z,c 前后左右上下, i,k,j,l 上下左右摇头 | x 退出");
-            displayManager.drawText(0, displayManager.getHeight() - 1, COLOR_WHITE, framesPerSecond + "FPS | time:" + time / 1000);
-        }
+        renderLoop.start();
     }
 
-    public static void processInput(Camera camera) {
-        if (inputThread == null) {
-            inputThread = new Thread(() -> {
-                while (MainLoop) {
-                    try {
-                        if (System.in.available() > 0) {
-                            char key = (char) System.in.read();
-                            switch (key) {
-                                case 'w':
-                                    camera.forward(0.1f);
-                                    break;
-                                case 's':
-                                    camera.backward(0.1f);
-                                    break;
-                                case 'a':
-                                    camera.left(0.1f);
-                                    break;
-                                case 'd':
-                                    camera.right(0.1f);
-                                    break;
-                                case 'z':
-                                    camera.up(0.1f);
-                                    break;
-                                case 'c' :
-                                    camera.down(0.1f);
-                                    break;
-                                case 'j':
-                                    camera.rotation(0, 10, 0);
-                                    break;
-                                case 'l':
-                                    camera.rotation(0, -10, 0);
-                                    break;
-                                case 'i':
-                                    camera.rotation(10, 0, 0);
-                                    break;
-                                case 'k':
-                                    camera.rotation(-10, 0, 0);
-                                    break;
-                                case 'x':
-                                    MainLoop = false;
-                            }
-                        }
-                        Thread.sleep(167);
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            });
-            inputThread.start();
-        }
-    }
 }

@@ -69,4 +69,8 @@ public class RenderManager {
     public Buffer<Vector4f> getRenderBuffer() {
         return render.getCurrentBuffer();
     }
+
+    public SceneManager getSceneManager() {
+        return sceneManager;
+    }
 }
