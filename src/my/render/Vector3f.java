@@ -46,6 +46,10 @@ public class Vector3f {
         return X * right.X + Y * right.Y + Z * right.Z;
     }
 
+    public Vector3f multiply(Vector3f right) {
+        return new Vector3f(X * right.X, Y * right.Y, Z * right.Z);
+    }
+
     ///反射向量
     public Vector3f reflect(Vector3f normal) {
         return this.reduce(normal.scale(2 * this.dotProduct(normal)));

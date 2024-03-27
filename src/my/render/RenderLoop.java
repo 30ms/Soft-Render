@@ -60,5 +60,17 @@ public abstract class RenderLoop {
         long frame;
         long time;
         long fps;
+
+        public long getFrame() {
+            return frame;
+        }
+
+        public long getTime() {
+            return time;
+        }
+
+        public long getFps() {
+            return fps;
+        }
     }
 }

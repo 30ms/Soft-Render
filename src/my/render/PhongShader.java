@@ -11,7 +11,7 @@ import java.util.Map;
 public class PhongShader extends AbstractShader{
 
     @Override
-    Vector4f vertexShader(Vertex vertex) {
+    protected Vector4f vertexShader(Vertex vertex) {
         Matrix4x4f
                 m = getUniformMat4x4("modelMat"),
                 v = getUniformMat4x4("viewMat"),

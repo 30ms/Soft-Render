@@ -12,13 +12,13 @@ import java.util.Map;
 public class Vertex {
 
     //顶点位置属性
-    Vector4f pos;
+    public Vector4f pos;
 
     //顶点法向量属性
-    Vector3f normal;
+    public Vector3f normal;
 
     //顶点纹理坐标属性
-    Vector2f texCoords;
+    public Vector2f texCoords;
 
     //着色器变量
    Map<String, float[]> shaderVaryings = new HashMap<>();

@@ -12,18 +12,18 @@ public class Model {
     /*
      位置
      */
-    Vector3f position;
+    public Vector3f position;
     /*
      缩放
      */
-    Vector3f scale;
+    public Vector3f scale;
     /*
      旋转
      */
-    Vector3f rotation;
-    Mesh mesh;
-    AbstractShader shader;
-    Consumer<AbstractShader> setupShader = shader -> {};
+    public Vector3f rotation;
+    public Mesh mesh;
+    public AbstractShader shader;
+    public Consumer<AbstractShader> setupShader = shader -> {};
 
     public Model(Vector3f position, Vector3f scale, Vector3f rotation, Mesh mesh, AbstractShader shader){
         this.position = position;

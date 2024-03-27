@@ -14,9 +14,9 @@ public abstract class AbstractShader {
     //全局变量, 着色器可访问
     private final Map<String, Object> UNIFORMS = new HashMap<>();
 
-    abstract Vector4f vertexShader(Vertex vertex);
+    protected abstract Vector4f vertexShader(Vertex vertex);
 
-    abstract Vector4f fragmentShader(Map<String, Texture> textures, Fragment f);
+    protected abstract Vector4f fragmentShader(Map<String, Texture> textures, Fragment f);
 
     public void putUniformV3f(String name, Vector3f v3f) {
         UNIFORMS.put(name, v3f);

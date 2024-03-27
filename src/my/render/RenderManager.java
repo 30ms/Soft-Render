@@ -43,19 +43,19 @@ public class RenderManager {
 
                 Mesh mesh = model.getMesh();
                 //绑定纹理
-                render.TEXTURES.putAll(mesh.getTextures());
+                render.TEXTURES.putAll(mesh.textures);
                 //遍历模型的每个面
-                for (Face face : mesh.getFaces()) {
+                for (Face face : mesh.faces) {
                     Vertex[] vertices = new Vertex[face.vertexIndices.length];
                     for (int i = 0; i < face.vertexIndices.length; i++) {
                         vertices[i] = new Vertex();
-                        vertices[i].pos = new Vector4f(mesh.getVertices()[face.vertexIndices[i]]);
+                        vertices[i].pos = new Vector4f(mesh.vertices[face.vertexIndices[i]]);
                     }
                     for (int i = 0; i < face.uvIndices.length; i++) {
-                        vertices[i].texCoords = mesh.getUVs()[face.uvIndices[i]];
+                        vertices[i].texCoords = mesh.uvs[face.uvIndices[i]];
                     }
                     for (int i = 0; i < face.normalsIndices.length; i++) {
-                        vertices[i].normal = mesh.getNormals()[face.normalsIndices[i]];
+                        vertices[i].normal = mesh.normals[face.normalsIndices[i]];
                     }
                     //渲染模型的三角形面
                     render.drawTriangular(vertices);

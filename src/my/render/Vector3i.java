@@ -7,7 +7,7 @@ package my.render;
  * @date 2022/12/14 9:42
  **/
 public class Vector3i {
-    int X, Y, Z;
+   public int X, Y, Z;
 
     public Vector3i(int x, int y, int z)
     {

@@ -7,15 +7,15 @@ package my.render;
  * @date 2022/12/15 19:54
  **/
 public class Camera {
-    Vector3f position;
-    Vector3f target;
-    Vector3f up;
+    public Vector3f position;
+    public Vector3f target;
+    public Vector3f up;
 
     //my.render.Frustum 视锥体相关属性
-    float fov;
-    float aspect;
-    float near;
-    float far;
+    public float fov;
+    public float aspect;
+    public float near;
+    public float far;
 
     public Camera(Vector3f position, Vector3f target, Vector3f up, float fov, float aspect, float near, float far) {
         this.position = position;
