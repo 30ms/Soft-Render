@@ -16,9 +16,9 @@ import java.util.Arrays;
 public class Texture<T> {
     int width, height;
     T[][] pixels;
-    Filtering filtering;
-    Wrapping wrapS, wrapT;
-    T borderColor;
+    public Filtering filtering;
+    public Wrapping wrapS, wrapT;
+    public T borderColor;
 
     public Texture(T[] rawRgbData, int width)
     {

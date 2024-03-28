@@ -17,7 +17,7 @@ public class SoftwareRender {
     private final Rasterizer rasterizer = Rasterizer.INSTINSE;
     public static final SoftwareRender INSTINCE = new SoftwareRender();
     //纹理映射, 片元着色访问
-    public Map<String, Texture> TEXTURES = new HashMap<>();
+    public List<Texture<Vector4f>> TEXTURES = new ArrayList<>();
 
     private SoftwareRender() {
     }

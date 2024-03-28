@@ -42,6 +42,11 @@ public class Vector3f {
         Z /= len;
     }
 
+    public Vector3f normalize() {
+        float len = length();
+        return new Vector3f(X / len, Y / len, Z / len);
+    }
+
     public float dotProduct(Vector3f right) {
         return X * right.X + Y * right.Y + Z * right.Z;
     }

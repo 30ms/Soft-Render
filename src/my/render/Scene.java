@@ -16,7 +16,7 @@ public class Scene {
     }
 
     public void update(long deltaTime) {
-        modelsInScene.forEach(model -> model.update(deltaTime));
+        modelsInScene.forEach(model -> model.updateCallback.accept(model, deltaTime));
     }
 
     public List<Model> getModelsInScene() {

@@ -37,28 +37,25 @@ public class RenderManager {
         while (!renderObjectQueue.isEmpty()) {
             Model model = renderObjectQueue.poll();
             if (model != null) {
-                //设置着色器
-                render.shader = model.shader;
-                model.setupShader.accept(render.shader);
-
-                Mesh mesh = model.getMesh();
-                //绑定纹理
-                render.TEXTURES.putAll(mesh.textures);
-                //遍历模型的每个面
-                for (Face face : mesh.faces) {
-                    Vertex[] vertices = new Vertex[face.vertexIndices.length];
-                    for (int i = 0; i < face.vertexIndices.length; i++) {
-                        vertices[i] = new Vertex();
-                        vertices[i].pos = new Vector4f(mesh.vertices[face.vertexIndices[i]]);
+                model.setupCallback.accept(model, render);
+                for (Mesh mesh : model.meshes) {
+                    mesh.setupCallback.accept(mesh, render);
+                    //遍历模型的每个面
+                    for (Face face : mesh.faces) {
+                        Vertex[] vertices = new Vertex[face.vertexIndices.size()];
+                        for (int i = 0; i < face.vertexIndices.size(); i++) {
+                            vertices[i] = new Vertex();
+                            vertices[i].pos = new Vector4f(mesh.vertices.get(face.vertexIndices.get(i)));
+                        }
+                        for (int i = 0; i < face.uvIndices.size(); i++) {
+                            vertices[i].texCoords = mesh.uvs.get(face.uvIndices.get(i));
+                        }
+                        for (int i = 0; i < face.normalsIndices.size(); i++) {
+                            vertices[i].normal = mesh.normals.get(face.normalsIndices.get(i));
+                        }
+                        //渲染模型的三角形面
+                        render.drawTriangular(vertices);
                     }
-                    for (int i = 0; i < face.uvIndices.length; i++) {
-                        vertices[i].texCoords = mesh.uvs[face.uvIndices[i]];
-                    }
-                    for (int i = 0; i < face.normalsIndices.length; i++) {
-                        vertices[i].normal = mesh.normals[face.normalsIndices[i]];
-                    }
-                    //渲染模型的三角形面
-                    render.drawTriangular(vertices);
                 }
             }
         }

@@ -1,6 +1,7 @@
 package my.render;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -25,7 +26,7 @@ public class Rasterizer {
         return (b.X - a.X) * (c.Y - a.Y) - (b.Y - a.Y) * (c.X - a.X);
     }
 
-    void drawTriangles(Vertex[] vertices, AbstractShader shader, Map<String, Texture> textures, Buffer<Float> zBuffer, Buffer<Vector4f> pixelBuffer) {
+    void drawTriangles(Vertex[] vertices, AbstractShader shader, List<Texture<Vector4f>> textures, Buffer<Float> zBuffer, Buffer<Vector4f> pixelBuffer) {
         //裁剪空间
         Vector4f[] vertices_clip = Arrays.stream(vertices).map(v -> v.pos).toArray(Vector4f[]::new);
         //投影除法, 标准设备坐标 (NDC)
