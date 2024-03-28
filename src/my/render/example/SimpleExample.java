@@ -1,4 +1,6 @@
-package my.render;
+package my.render.example;
+
+import my.render.*;
 
 import java.util.Collections;
 import java.util.List;
@@ -9,7 +11,7 @@ import java.util.List;
  * @author Liuzhenbin
  * @date 2022/12/17 10:56
  **/
-public class Main {
+public class SimpleExample {
 
     static Vector3f[] vertices = new Vector3f[]{
             // Z+
@@ -116,7 +118,7 @@ public class Main {
                 super.processRending(monitorInfo);
                 //显示文字
                 getDisplayManager().drawText(0, displayManager.getHeight() - 2, new Vector3i(255, 255, 255), "摄影机: w,s,a,d,z,c 前后左右上下, i,k,j,l 上下左右摇头 | x 退出");
-                getDisplayManager().drawText(0, displayManager.getHeight() - 1, new Vector3i(255, 255, 255), monitorInfo.fps + "FPS | time:" + monitorInfo.time / 1000);
+                getDisplayManager().drawText(0, displayManager.getHeight() - 1, new Vector3i(255, 255, 255), monitorInfo.getFps() + "FPS | time:" + monitorInfo.getTime() / 1000);
             }
         };
         //注册按键控制监听
