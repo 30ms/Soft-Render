@@ -39,47 +39,47 @@ public class Camera {
     }
 
     public void forward(float length) {
-        Vector3f front = target.reduce(position);
+        Vector3f front = target.subtract(position);
         front.normalized();
-        position = position.add(front.scale(length));
-        target = target.add(front.scale(length));
+        position = position.add(front.multiply(length));
+        target = target.add(front.multiply(length));
     }
 
     public void backward(float length) {
-        Vector3f front = target.reduce(position);
+        Vector3f front = target.subtract(position);
         front.normalized();
-        position = position.reduce(front.scale(length));
-        target = target.reduce(front.scale(length));
+        position = position.subtract(front.multiply(length));
+        target = target.subtract(front.multiply(length));
     }
 
     public void right(float length) {
-        Vector3f front = target.reduce(position);
+        Vector3f front = target.subtract(position);
         Vector3f right = front.cross(up);
         right.normalized();
-        position = position.add(right.scale(length));
-        target = target.add(right.scale(length));
+        position = position.add(right.multiply(length));
+        target = target.add(right.multiply(length));
     }
 
     public void left(float length) {
-        Vector3f front = target.reduce(position);
+        Vector3f front = target.subtract(position);
         Vector3f right = front.cross(up);
         right.normalized();
-        position = position.reduce(right.scale(length));
-        target = target.reduce(right.scale(length));
+        position = position.subtract(right.multiply(length));
+        target = target.subtract(right.multiply(length));
     }
 
     public void up(float length) {
-        position = position.add(up.scale(length));
-        target  = target.add(up.scale(length));
+        position = position.add(up.multiply(length));
+        target  = target.add(up.multiply(length));
     }
 
     public void down(float length) {
-        position = position.reduce(up.scale(length));
-        target  = target.reduce(up.scale(length));
+        position = position.subtract(up.multiply(length));
+        target  = target.subtract(up.multiply(length));
     }
 
     public void rotation(float x, float y, float z) {
-        Matrix4x4f t1 = Matrix4x4f.translation(position.scale(-1));
+        Matrix4x4f t1 = Matrix4x4f.translation(position.multiply(-1));
         Matrix4x4f ro = Matrix4x4f.rotationX(x).multiply(Matrix4x4f.rotationY(y)).multiply(Matrix4x4f.rotationZ(z));
         Matrix4x4f t2 = Matrix4x4f.translation(position);
         Vector4f res = t2.multiply(ro).multiply(t1).multiply(new Vector4f(target));

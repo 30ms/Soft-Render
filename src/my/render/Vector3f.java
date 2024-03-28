@@ -19,7 +19,7 @@ public class Vector3f {
         return new Vector3f(Y * right.Z - Z * right.Y, Z * right.X - X * right.Z, X * right.Y - Y * right.X);
     }
 
-    public Vector3f reduce(Vector3f right) {
+    public Vector3f subtract(Vector3f right) {
         return new Vector3f(X - right.X, Y - right.Y, Z - right.Z);
     }
 
@@ -27,8 +27,8 @@ public class Vector3f {
         return new Vector3f(X + right.X, Y + right.Y, Z + right.Z);
     }
 
-    public Vector3f scale(float scale) {
-        return new Vector3f(X * scale, Y * scale, Z * scale);
+    public Vector3f multiply(float s) {
+        return new Vector3f(X * s, Y * s, Z * s);
     }
 
     public float length() {
@@ -57,6 +57,6 @@ public class Vector3f {
 
     ///反射向量
     public Vector3f reflect(Vector3f normal) {
-        return this.reduce(normal.scale(2 * this.dotProduct(normal)));
+        return this.subtract(normal.multiply(2 * this.dotProduct(normal)));
     }
 }

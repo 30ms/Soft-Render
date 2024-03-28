@@ -175,27 +175,27 @@ public class Main {
             //环境光强度
             float ambientStrength = 0.1f;
             //环境光
-            Vector3f ambient = lightColor.scale(ambientStrength);
+            Vector3f ambient = lightColor.multiply(ambientStrength);
 
             //光照向量(从顶点指向光源)
-            Vector3f ligDir = lightPos.reduce(pos);
+            Vector3f ligDir = lightPos.subtract(pos);
             ligDir.normalized();
             float diff = Math.max(0, norm.dotProduct(ligDir));
             //漫反射光
-            Vector3f diffuse = lightColor.scale(diff);
+            Vector3f diffuse = lightColor.multiply(diff);
 
             //镜面强度
             float specularStrength = 0.3f;
             //反光度
             int shininess = 32;
             //视角向量(顶点到相机的方向)
-            Vector3f viewDir = viewPos.reduce(pos);
+            Vector3f viewDir = viewPos.subtract(pos);
             viewDir.normalized();
             //光的反射向量(反射计算需要从光源到顶点的方向)
-            Vector3f reflectDir = ligDir.scale(-1).reflect(norm);
+            Vector3f reflectDir = ligDir.multiply(-1).reflect(norm);
             float spec = (float) Math.pow(Math.max(0, viewDir.dotProduct(reflectDir)), shininess);
             //镜面反射光
-            Vector3f specular = lightColor.scale(specularStrength * spec);
+            Vector3f specular = lightColor.multiply(specularStrength * spec);
 
             return new Vector4f(
                     (ambient.X + diffuse.X + specular.X) * color.X,

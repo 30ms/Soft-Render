@@ -28,7 +28,7 @@ public class Vector4f {
         this(vector3f.X, vector3f.Y, vector3f.Z, w);
     }
 
-    public Vector4f reduce(Vector4f right) {
+    public Vector4f subtract(Vector4f right) {
         return new Vector4f(X - right.X, Y - right.Y, Z - right.Z, W - right.W);
     }
 
@@ -56,7 +56,7 @@ public class Vector4f {
         return new Vector3f(X, Y, Z);
     }
 
-    public Vector4f scale(float s) {
+    public Vector4f multiply(float s) {
         return new Vector4f(X * s, Y * s, Z * s, W * s);
     }
 

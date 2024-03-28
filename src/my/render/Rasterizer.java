@@ -105,7 +105,7 @@ public class Rasterizer {
                 Vector4f dstColor = pixelBuffer.get(x, y);
                 //透明度混合(alpha blending)
                 //混合公式: res = src * (srcAlpha) + dst * (1-srcAlpha)
-                pixelBuffer.set(x, y, rgbaColor.scale(rgbaColor.W).add(dstColor.scale(1 - rgbaColor.W)));
+                pixelBuffer.set(x, y, rgbaColor.multiply(rgbaColor.W).add(dstColor.multiply(1 - rgbaColor.W)));
             }
         }
     }

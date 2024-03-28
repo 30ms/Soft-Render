@@ -126,11 +126,11 @@ public class LoadMeshFromFileExample {
 
             Vector3f
                     //从点到光源的方向
-                    lightDir = lightPos.reduce(pos).normalize(),
+                    lightDir = lightPos.subtract(pos).normalize(),
                     //从点到视点的方向
-                    viewDir = viewPos.reduce(pos).normalize(),
+                    viewDir = viewPos.subtract(pos).normalize(),
                     //光的反射向量(反射计算需要从光源到顶点的方向)
-                    reflectDir = lightDir.scale(-1).reflect(norm);
+                    reflectDir = lightDir.multiply(-1).reflect(norm);
 
             //计算漫反射因子
             float diff = Math.max(0, norm.dotProduct(lightDir));
@@ -150,8 +150,8 @@ public class LoadMeshFromFileExample {
             }
 
             Vector3f materialAmbientColor = diffuseTextureColor.toVector3f().multiply(lightAmbient.add(materialAmbient));
-            Vector3f materialDiffuseColor = diffuseTextureColor.toVector3f().scale(diff).multiply(lightDiffuse.add(materialDiffuse));
-            Vector3f materialSpecularColor = specularTextureColor.toVector3f().scale(spec).multiply(lightSpecular.add(materialSpecular));
+            Vector3f materialDiffuseColor = diffuseTextureColor.toVector3f().multiply(diff).multiply(lightDiffuse.add(materialDiffuse));
+            Vector3f materialSpecularColor = specularTextureColor.toVector3f().multiply(spec).multiply(lightSpecular.add(materialSpecular));
 
             return new Vector4f(materialAmbientColor.add(materialDiffuseColor).add(materialSpecularColor), 1);
         }

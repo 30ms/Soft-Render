@@ -120,7 +120,7 @@ public class Matrix4x4f {
 
     public static Matrix4x4f lookAt(Vector3f position, Vector3f target, Vector3f up) {
         //z轴为观察方向的反向
-        Vector3f z = position.reduce(target);
+        Vector3f z = position.subtract(target);
         z.normalized();
         Vector3f x = up.cross(z);
         x.normalized();
