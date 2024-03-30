@@ -51,7 +51,7 @@ public class Rasterizer {
 
         for (int y = (int) startY; y < endY; y++) {
             for (int x = (int) startX; x < endX; x++) {
-                Vector2f p = new Vector2f(x, y);
+                Vector2f p = new Vector2f(x + 0.5f, y + 0.5f);
                 //点P到三个顶点的有向面积
                 float areaABP = edg(a, b, p);
                 float areaBCP = edg(b, c, p);
@@ -81,7 +81,7 @@ public class Rasterizer {
 
                 Fragment frag = new Fragment();
                 //裁剪空间坐标
-                frag.pos = new Vector3f(x, y, zN);
+                frag.pos = new Vector3f(p.X, p.Y, zN);
 
                 //插值计算片元着色器变量
                 for (Map.Entry<String, float[]> varying : vertices[0].shaderVaryings.entrySet()) {
