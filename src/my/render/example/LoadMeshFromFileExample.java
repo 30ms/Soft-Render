@@ -130,12 +130,14 @@ public class LoadMeshFromFileExample {
                     //从点到视点的方向
                     viewDir = viewPos.subtract(pos).normalize(),
                     //光的反射向量(反射计算需要从光源到顶点的方向)
-                    reflectDir = lightDir.multiply(-1).reflect(norm);
+//                    reflectDir = lightDir.multiply(-1).reflect(norm),
+                    //半角向量
+                    half = lightDir.add(viewDir).normalize();
 
             //计算漫反射因子
             float diff = Math.max(0, norm.dotProduct(lightDir));
             //计算镜面光因子
-            float spec = (float) Math.pow(Math.max(0, viewDir.dotProduct(reflectDir)), getUniformFloat("material.shininess"));
+            float spec = (float) Math.pow(Math.max(0, norm.dotProduct(half)), getUniformFloat("material.shininess"));
             //纹理坐标
             Vector2f texCoords = f.getV2fVarying("texCoords");
             Vector4f
@@ -149,9 +151,9 @@ public class LoadMeshFromFileExample {
                 specularTextureColor = new Vector4f(0, 0, 0, 1);
             }
 
-            Vector3f materialAmbientColor = diffuseTextureColor.toVector3f().multiply(lightAmbient.add(materialAmbient));
-            Vector3f materialDiffuseColor = diffuseTextureColor.toVector3f().multiply(diff).multiply(lightDiffuse.add(materialDiffuse));
-            Vector3f materialSpecularColor = specularTextureColor.toVector3f().multiply(spec).multiply(lightSpecular.add(materialSpecular));
+            Vector3f materialAmbientColor = diffuseTextureColor.toVector3f().multiply(lightAmbient).multiply(materialAmbient);
+            Vector3f materialDiffuseColor = diffuseTextureColor.toVector3f().multiply(diff).multiply(lightDiffuse).multiply(materialDiffuse);
+            Vector3f materialSpecularColor = specularTextureColor.toVector3f().multiply(spec).multiply(lightSpecular).multiply(materialSpecular);
 
             return new Vector4f(materialAmbientColor.add(materialDiffuseColor).add(materialSpecularColor), 1);
         }
