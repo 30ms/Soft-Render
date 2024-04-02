@@ -144,21 +144,20 @@ public class SoftwareRender {
             intersection = new Vertex();
             //插值计算顶点坐标
             intersection.pos = new Vector4f(
-                    v1.pos.X + t * (v2.pos.X - v1.pos.X),
-                    v1.pos.Y + t * (v2.pos.Y - v1.pos.Y),
-                    v1.pos.Z + t * (v2.pos.Z - v1.pos.Z),
-                    v1.pos.W + t * (v2.pos.W - v1.pos.W));
+                    interpolateLinear(v1.pos.X, v2.pos.X, t),
+                    interpolateLinear(v1.pos.Y, v2.pos.Y, t),
+                    interpolateLinear(v1.pos.Z, v2.pos.Z, t),
+                    interpolateLinear(v1.pos.W, v2.pos.W, t));
             //插值计算纹理坐标
             intersection.texCoords = new Vector2f(
-                    v1.texCoords.X + t * (v2.texCoords.X - v1.texCoords.X),
-                    v1.texCoords.Y + t * (v2.texCoords.Y - v1.texCoords.Y));
+                    interpolateLinear(v1.texCoords.X, v2.texCoords.X, t),
+                    interpolateLinear(v1.texCoords.Y, v2.texCoords.Y, t));
 
             //插值计算法向量坐标
             intersection.normal = new Vector3f(
-                    v1.normal.X + t * (v2.normal.X - v1.normal.X),
-                    v1.normal.Y + t * (v2.normal.Y - v1.normal.Y),
-                    v1.normal.Z + t * (v2.normal.Z - v1.normal.Z)
-            );
+                    interpolateLinear(v1.normal.X, v2.normal.X, t),
+                    interpolateLinear(v1.normal.Y, v2.normal.Y, t),
+                    interpolateLinear(v1.normal.Z, v2.normal.Z, t));
 
             //执行顶点着色
             shader.vertexShader(intersection);
