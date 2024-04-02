@@ -5,5 +5,8 @@
 ## 控制台渲染截图
 ![image](https://github.com/30ms/Soft-Render/blob/master/img/img.png)
 
+## 模型渲染
+![image](https://github.com/30ms/Soft-Render/blob/master/img/example_model.png)
+
 ## 启动方式
 编译项目后，运行`java my.render.example.SimpleExample`
