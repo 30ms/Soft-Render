@@ -56,12 +56,24 @@ public class Vector4f {
         return new Vector3f(X, Y, Z);
     }
 
+    public Vector2f toVector2f() {
+        return new Vector2f(X, Y);
+    }
+
     public Vector4f multiply(float s) {
         return new Vector4f(X * s, Y * s, Z * s, W * s);
     }
 
     public Vector4f multiply(Vector4f right) {
         return new Vector4f(X * right.X, Y * right.Y, Z * right.Z, W * right.W);
+    }
+
+    public Vector4f min(Vector4f right) {
+        return new Vector4f(Math.min(X, right.X), Math.min(Y, right.Y), Math.min(Z, right.Z), Math.min(W, right.W));
+    }
+
+    public Vector4f max(Vector4f right) {
+        return new Vector4f(Math.max(X, right.X), Math.max(Y, right.Y), Math.max(Z, right.Z), Math.max(W, right.W));
     }
 
 }
