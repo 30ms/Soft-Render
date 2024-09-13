@@ -89,8 +89,12 @@ public class Mesh {
                         for (int i = 1; i < parts.length; i++) {
                             String[] faceParts = parts[i].split("/");
                             face.vertexIndices.add(Integer.parseInt(faceParts[0]) - 1);
-                            face.uvIndices.add(Integer.parseInt(faceParts[1]) - 1);
-                            face.normalsIndices.add(Integer.parseInt(faceParts[2]) - 1);
+                            if (faceParts.length >= 2) {
+                                face.uvIndices.add(Integer.parseInt(faceParts[1]) - 1);
+                            }
+                            if (faceParts.length >= 3) {
+                                face.normalsIndices.add(Integer.parseInt(faceParts[2]) - 1);
+                            }
                         }
                         mesh.faces.add(face);
                         break;

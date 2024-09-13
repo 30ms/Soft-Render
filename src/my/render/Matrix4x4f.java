@@ -99,7 +99,7 @@ public class Matrix4x4f {
         return perspectiveProjection(left, right, bottom, top, zNear, zFar);
     }
 
-    //右手坐标系的透视投影矩阵,XYZ值映射到了[-1,1], near, far为距离值
+    //右手坐标系的透视投影矩阵, near, far为距离值, 计算后的W分量为-Z
     public static Matrix4x4f perspectiveProjection(float left, float right, float bottom, float top, float near, float far) {
         return new Matrix4x4f(
                 2 * near / (right - left), 0,                         (right + left) / (right - left), 0,
