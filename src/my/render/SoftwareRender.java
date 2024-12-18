@@ -22,7 +22,7 @@ public class SoftwareRender {
     public boolean depthTest = true;
     public float minDepth = 0;
     public float maxDepth = 1;
-    public DepthTestFunc depthTestFunc = DepthTestFunc.GREATER;
+    public DepthTestFunc depthTestFunc = DepthTestFunc.LESS;
     public boolean blend = true;
     public BlendFactor srcFactor = BlendFactor.ONE;
     public BlendFactor dstFactor = BlendFactor.ZERO;
@@ -38,7 +38,7 @@ public class SoftwareRender {
         for (int i = 0; i < pixelBuffers.length; i++) {
             this.pixelBuffers[i] = new Buffer<>(width, height, new Vector4f(0, 0, 0, 1));
         }
-        this.zBuffer = new Buffer<>(width, height, -Float.MAX_VALUE);
+        this.zBuffer = new Buffer<>(width, height, maxDepth);
         viewpointWidth = width;
         viewpointHeight = height;
     }
@@ -73,11 +73,11 @@ public class SoftwareRender {
         }
         //裁剪
         vertices= clipping(vertices);
-        //投影除法, 标准设备坐标 (NDC) x,y,z->[-1, 1]
+        //投影除法(齐次除法).  x,y,z,w ->[x/w, y/w, z/w, 1]
         for (Vertex vertex : vertices) {
             perspectiveDivide(vertex.pos);
         }
-        //视口转换 ndc坐标转换为视口坐标.  x,y->[viewpoint.X, viewpointWidth] [viewpoint.Y, viewpointHeight] z->[minDepth, maxDepth]
+        //视口转换 换为视口坐标. x->[viewpoint.X, viewpointWidth],y->[viewpoint.Y, viewpointHeight],z->[minDepth, maxDepth]
         for (Vertex vertex : vertices) {
             viewpointTransform(vertex.pos, viewpointX, viewpointY, viewpointWidth, viewpointHeight, minDepth, maxDepth);
         }
@@ -172,12 +172,14 @@ public class SoftwareRender {
     }
 
     /**
-     * 透视除法
+     * 透视除法 x,y,z,w -> x/w, y/w, z/w, 1
+     * 从此保留w分量，未进行除法，用于后续矫正
      */
     private void perspectiveDivide(Vector4f vertex) {
         vertex.X /= vertex.W;
         vertex.Y /= vertex.W;
         vertex.Z /= vertex.W;
+        vertex.W /= vertex.W;
     }
 
     private void viewpointTransform(Vector4f vertex, int viewpointX, int viewpointY, int width, int height, float minDepth, float maxDepth) {
@@ -257,6 +259,7 @@ public class SoftwareRender {
         for (int y = (int) startY; y < endY; y++) {
             for (int x = (int) startX; x < endX; x++) {
                 //采样像素的中点
+                //TODO MSAA(多重采样抗锯齿)
                 Vector2f p = new Vector2f(x + 0.5f, y + 0.5f);
                 //点P到三个顶点的有向面积
                 float areaABP = edg(a, b, p);
@@ -268,29 +271,34 @@ public class SoftwareRender {
                 //判断点p是否在三角形内
                 if (barycentric.X < 0 || barycentric.Y < 0 || barycentric.Z < 0) continue;
 
-                //不能使用屏幕空间的计算的重心坐标插值计算观察空间坐标的Z
-                //因为经过透视除法后的屏幕空间Z是非线性的，所以插值出来的深度值和观察空间的Z是非线性相关的
-                //所以在靠经近平面的时深度值精度高，而远离近平面时精度低
-//                float z = interpolateBarycentric(vertices[0].pos.Z, vertices[1].pos.Z, vertices[2].pos.Z, barycentric);
+                float z;
+                /*
+                插值计算z
+                在经过透视投影变化后的坐标，屏幕空间的线性关系和视图空间的线性关系并不相等，所以用屏幕空间的重心坐标插值计算z并不是视图空间中正确的z
+                所以在靠经近平面的时深度值精度高，而远离近平面时精度低，即z-fighting。
+                 */
+                z = interpolateBarycentric(vertices[0].pos.Z, vertices[1].pos.Z, vertices[2].pos.Z, barycentric);
 
-                //屏幕空间投影点在观察空间中的Z, 1/Zn = i * 1/Z1 + j * 1/Z2 + k * 1/Z3
-                //投影坐标的w = 摄像空间的-Z
-                barycentric.X /= -vertices[0].pos.W;
-                barycentric.Y /= -vertices[1].pos.W;
-                barycentric.Z /= -vertices[2].pos.W;
-
-                //观察空间下的坐标z
-                float z = 1f / (barycentric.X + barycentric.Y + barycentric.Z);
+                /*
+                z值矫正(此步骤在实际渲染管线不会执行, 一般在片元着色器执行z值矫正。但是软渲染为了方便在光栅时执行)
+                虽然Z空间线性关系和屏幕的线性关系不同，但是 1/z 却是线性相关的，公式如下:
+                1/Zt =  i * 1/Z1 + j * 1/Z2 + k * 1/ Z3
+                片元着色器Z值矫正方法: 顶点着色时添加1/z的顶点属性, 在片元着色时将自动对1/z进行插值计算，然后取插值计算后的倒数就是该片元的矫正后的空间Z值
+                 */
+                z = 1 / (barycentric.X / vertices[0].pos.Z + barycentric.Y / vertices[1].pos.Z + barycentric.Z / vertices[2].pos.Z);
+                /*
+                重心坐标矫正 (实际的渲染管线不存在，一般在着色器进行属性矫正，但是软渲染可以在内部实现重心坐标矫正)
+                属性插值公式: I = (i * I1/Z1 + j * I2/Z2 + k * I3/Z2) * Z
+                重心坐标矫正  i'= z * i * 1/z1 , j'= z * j * 1/z2 , k'= z * k * 1/z3
+                 */
+                barycentric.X *= z / vertices[0].pos.Z;
+                barycentric.Y *= z / vertices[1].pos.Z;
+                barycentric.Z *= z / vertices[2].pos.Z;
 
                 //early Z test
                 if (earlyZ && !depthTest(x, y, z)) {
                     continue;
                 }
-
-                //重心坐标正, 属性插值公式: In = (i * I1/Z1 + j * I2/Z2 + k * I3/Z3) * zn
-                barycentric.X *= z;   // i * 1/Z1 * Zn
-                barycentric.Y *= z;   // j * 1/Z2 * Zn
-                barycentric.Z *= z;   // k * 1/Z3 * Zn
 
                 Fragment frag = new Fragment();
                 //裁剪空间坐标
@@ -319,10 +327,11 @@ public class SoftwareRender {
                 if(rgbaColor.W > 1f) rgbaColor.W = 1f;
 
                 //深度测试
-                if (depthTest && !depthTest(x, y, z)) {
+                if (depthTest && !depthTest((int) frag.pos.X, (int) frag.pos.Y, frag.pos.Z)) {
                     continue;
                 }
-                zBuffer.set(x, y, z);
+                //设置深度缓存区
+                zBuffer.set((int) frag.pos.X, (int) frag.pos.Y, frag.pos.Z);
 
                 //颜色混合
                 if (blend) {
