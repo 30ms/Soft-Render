@@ -16,8 +16,8 @@ public class LoadMeshFromFileExample {
         Vector2i windowSize = new Vector2i(800, 800);
 
         Vector3f lightPos = new Vector3f(0, 7, 10);
-        Vector3f lightAmbient = new Vector3f(0.1f, 0.1f, 0.1f);
-        Vector3f lightDiffuse = new Vector3f(0.5f, 0.5f, 0.5f);
+        Vector3f lightAmbient = new Vector3f(0.2f, 0.2f, 0.2f);
+        Vector3f lightDiffuse = new Vector3f(1f, 1f, 1f);
         Vector3f lightSpecular = new Vector3f(1.0f, 1.0f, 1.0f);
 
         Camera camera = new Camera(
