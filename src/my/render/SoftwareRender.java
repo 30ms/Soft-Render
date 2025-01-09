@@ -73,7 +73,7 @@ public class SoftwareRender {
         }
         //裁剪
         vertices= clipping(vertices);
-        //投影除法(齐次除法).  x,y,z,w ->[x/w, y/w, z/w, 1]
+        //投影除法(齐次除法).  x,y,z,w ->[x/w, y/w, z/w, W]
         for (Vertex vertex : vertices) {
             perspectiveDivide(vertex.pos);
         }
@@ -172,14 +172,13 @@ public class SoftwareRender {
     }
 
     /**
-     * 透视除法 x,y,z,w -> x/w, y/w, z/w, 1
+     * 透视除法 x,y,z,w -> x/w, y/w, z/w, W
      * 从此保留w分量，未进行除法，用于后续矫正
      */
     private void perspectiveDivide(Vector4f vertex) {
         vertex.X /= vertex.W;
         vertex.Y /= vertex.W;
         vertex.Z /= vertex.W;
-        vertex.W /= vertex.W;
     }
 
     private void viewpointTransform(Vector4f vertex, int viewpointX, int viewpointY, int width, int height, float minDepth, float maxDepth) {
@@ -273,27 +272,40 @@ public class SoftwareRender {
 
                 float z;
                 /*
-                插值计算z
-                在经过透视投影变化后的坐标，屏幕空间的线性关系和视图空间的线性关系并不相等，所以用屏幕空间的重心坐标插值计算z并不是视图空间中正确的z
-                所以在靠经近平面的时深度值精度高，而远离近平面时精度低，即z-fighting。
+                插值计算屏幕空间的Z，在透视投影下3D空间的线性关系和2D线性关系并不相等。
+                所以屏幕空间的Z的直接线性插值并不总是得到正确的空间Z。但只是插值深度值不会有太大的影响
+
+                相关参考:
+                https://www.cnblogs.com/straywriter/articles/15889273.html
+                https://www.comp.nus.edu.sg/~lowkl/publications/lowk_persp_interp_techrep.pdf
+
+                而且在透视投影下，深度值和观察空间的Z也不是线性相关的:
+                Z_view -> Z_clip -> Z_ndc -> Z_screen
+                Z_clip = A * Z_view + B (透视投影下, A、B为常数，详细看透视投影矩阵)
+                Z_ndc = Z_clip/W_clip (齐次除法, 透视投影下，W_clip = -Z_view)
+                Z_ndc = Z_clip/-Z_view = ( A * Z_view + B) / -Z_view
+                所以NDC空间的Z不是线性的, 和观察空间的Z成反比(1/Z), 距离近平面越近精度越高(Z-fighting现象)
                  */
                 z = interpolateBarycentric(vertices[0].pos.Z, vertices[1].pos.Z, vertices[2].pos.Z, barycentric);
 
                 /*
-                z值矫正(此步骤在实际渲染管线不会执行, 一般在片元着色器执行z值矫正。但是软渲染为了方便在光栅时执行)
-                虽然Z空间线性关系和屏幕的线性关系不同，但是 1/z 却是线性相关的，公式如下:
-                1/Zt =  i * 1/Z1 + j * 1/Z2 + k * 1/ Z3
-                片元着色器Z值矫正方法: 顶点着色时添加1/z的顶点属性, 在片元着色时将自动对1/z进行插值计算，然后取插值计算后的倒数就是该片元的矫正后的空间Z值
+                重心坐标矫正, 此方法适用于透视投影和正交投影
+                虽然观察空间Z的不是屏幕线性相关的，但是 1/Z 却是，公式如下:
+                1/Z_view_n =  i * 1/Z_view_1 + j * 1/Z_view_2 + k * 1/ Z_view_3
                  */
-                z = 1 / (barycentric.X / vertices[0].pos.Z + barycentric.Y / vertices[1].pos.Z + barycentric.Z / vertices[2].pos.Z);
+                barycentric.X /= vertices[0].pos.W;
+                barycentric.Y /= vertices[1].pos.W;
+                barycentric.Z /= vertices[2].pos.W;
+                //观察空间Z的倒数
+                float reciprocalZ = barycentric.X + barycentric.Y + barycentric.Z;
+
                 /*
-                重心坐标矫正 (实际的渲染管线不存在，一般在着色器进行属性矫正，但是软渲染可以在内部实现重心坐标矫正)
-                属性插值公式: I = (i * I1/Z1 + j * I2/Z2 + k * I3/Z2) * Z
+                属性插值公式: I/Z_view_n = i * I1/Z_view_1 + j * I2/Z_view_2 + k * I3/Z_view_3
                 重心坐标矫正  i'= z * i * 1/z1 , j'= z * j * 1/z2 , k'= z * k * 1/z3
                  */
-                barycentric.X *= z / vertices[0].pos.Z;
-                barycentric.Y *= z / vertices[1].pos.Z;
-                barycentric.Z *= z / vertices[2].pos.Z;
+                barycentric.X /= reciprocalZ;
+                barycentric.Y /= reciprocalZ;
+                barycentric.Z /= reciprocalZ;
 
                 //early Z test
                 if (earlyZ && !depthTest(x, y, z)) {
